@@ -11,135 +11,143 @@ interface BracketGame {
   score2?: number;
   winner?: string;
   venue?: string;
+  date?: string;
 }
 
 // Full playoff bracket data for 2025-2026 season
 const bracketData: Record<string, Record<string, BracketGame[][]>> = {
   '6A': {
     'I': [
-      // State Semifinals
+      // State Semifinals - Dec 13-14
       [
-        { team1: 'North Shore', team2: 'Lake Travis', score1: 28, score2: 21, winner: 'North Shore' },
-        { team1: 'Duncanville', team2: 'Allen', score1: 35, score2: 28, winner: 'Duncanville' },
+        { team1: 'North Shore', team2: 'Lake Travis', score1: 28, score2: 21, winner: 'North Shore', date: '2025-12-13' },
+        { team1: 'Duncanville', team2: 'Allen', score1: 35, score2: 28, winner: 'Duncanville', date: '2025-12-14' },
       ],
-      // State Championship
+      // State Championship - Dec 20
       [
-        { team1: 'North Shore', team2: 'Duncanville', score1: 10, score2: 7, winner: 'North Shore', venue: 'AT&T Stadium' },
+        { team1: 'North Shore', team2: 'Duncanville', score1: 10, score2: 7, winner: 'North Shore', venue: 'AT&T Stadium', date: '2025-12-20' },
       ],
     ],
     'II': [
       [
-        { team1: 'DeSoto', team2: 'Southlake Carroll', score1: 42, score2: 28, winner: 'DeSoto' },
-        { team1: 'C.E. King', team2: 'Vandegrift', score1: 58, score2: 41, winner: 'C.E. King' },
+        { team1: 'DeSoto', team2: 'Southlake Carroll', score1: 42, score2: 28, winner: 'DeSoto', date: '2025-12-13' },
+        { team1: 'C.E. King', team2: 'Vandegrift', score1: 58, score2: 41, winner: 'C.E. King', date: '2025-12-14' },
       ],
       [
-        { team1: 'DeSoto', team2: 'C.E. King', score1: 55, score2: 27, winner: 'DeSoto', venue: 'AT&T Stadium' },
+        { team1: 'DeSoto', team2: 'C.E. King', score1: 55, score2: 27, winner: 'DeSoto', venue: 'AT&T Stadium', date: '2025-12-20' },
       ],
     ],
   },
   '5A': {
     'I': [
       [
-        { team1: 'Smithson Valley', team2: 'Denton Ryan', score1: 35, score2: 21, winner: 'Smithson Valley' },
-        { team1: 'Frisco Lone Star', team2: 'College Station', score1: 28, score2: 14, winner: 'Frisco Lone Star' },
+        { team1: 'Smithson Valley', team2: 'Denton Ryan', score1: 35, score2: 21, winner: 'Smithson Valley', date: '2025-12-13' },
+        { team1: 'Frisco Lone Star', team2: 'College Station', score1: 28, score2: 14, winner: 'Frisco Lone Star', date: '2025-12-13' },
       ],
       [
-        { team1: 'Smithson Valley', team2: 'Frisco Lone Star', score1: 28, score2: 6, winner: 'Smithson Valley', venue: 'AT&T Stadium' },
+        { team1: 'Smithson Valley', team2: 'Frisco Lone Star', score1: 28, score2: 6, winner: 'Smithson Valley', venue: 'AT&T Stadium', date: '2025-12-19' },
       ],
     ],
     'II': [
       [
-        { team1: 'South Oak Cliff', team2: 'Boerne', score1: 42, score2: 14, winner: 'South Oak Cliff' },
-        { team1: 'Richmond Randle', team2: 'Iowa Colony', score1: 35, score2: 21, winner: 'Richmond Randle' },
+        { team1: 'South Oak Cliff', team2: 'Boerne', score1: 42, score2: 14, winner: 'South Oak Cliff', date: '2025-12-13' },
+        { team1: 'Richmond Randle', team2: 'Iowa Colony', score1: 35, score2: 21, winner: 'Richmond Randle', date: '2025-12-13' },
       ],
       [
-        { team1: 'South Oak Cliff', team2: 'Richmond Randle', score1: 35, score2: 19, winner: 'South Oak Cliff', venue: 'AT&T Stadium' },
+        { team1: 'South Oak Cliff', team2: 'Richmond Randle', score1: 35, score2: 19, winner: 'South Oak Cliff', venue: 'AT&T Stadium', date: '2025-12-20' },
       ],
     ],
   },
   '4A': {
     'I': [
       [
-        { team1: 'Stephenville', team2: 'China Spring', score1: 42, score2: 21, winner: 'Stephenville' },
-        { team1: 'Kilgore', team2: 'Celina', score1: 28, score2: 24, winner: 'Kilgore' },
+        { team1: 'Stephenville', team2: 'China Spring', score1: 42, score2: 21, winner: 'Stephenville', date: '2025-12-13' },
+        { team1: 'Kilgore', team2: 'Celina', score1: 28, score2: 24, winner: 'Kilgore', date: '2025-12-13' },
       ],
       [
-        { team1: 'Stephenville', team2: 'Kilgore', score1: 35, score2: 21, winner: 'Stephenville', venue: 'AT&T Stadium' },
+        { team1: 'Stephenville', team2: 'Kilgore', score1: 35, score2: 21, winner: 'Stephenville', venue: 'AT&T Stadium', date: '2025-12-19' },
       ],
     ],
     'II': [
       [
-        { team1: 'Carthage', team2: 'Cuero', score1: 49, score2: 14, winner: 'Carthage' },
-        { team1: 'West Orange-Stark', team2: 'Bellville', score1: 35, score2: 28, winner: 'West Orange-Stark' },
+        { team1: 'Carthage', team2: 'Cuero', score1: 49, score2: 14, winner: 'Carthage', date: '2025-12-13' },
+        { team1: 'West Orange-Stark', team2: 'Bellville', score1: 35, score2: 28, winner: 'West Orange-Stark', date: '2025-12-13' },
       ],
       [
-        { team1: 'Carthage', team2: 'West Orange-Stark', score1: 42, score2: 14, winner: 'Carthage', venue: 'AT&T Stadium' },
+        { team1: 'Carthage', team2: 'West Orange-Stark', score1: 42, score2: 14, winner: 'Carthage', venue: 'AT&T Stadium', date: '2025-12-19' },
       ],
     ],
   },
   '3A': {
     'I': [
       [
-        { team1: 'Yoakum', team2: 'Columbus', score1: 28, score2: 21, winner: 'Yoakum' },
-        { team1: 'Grandview', team2: 'Brock', score1: 35, score2: 28, winner: 'Grandview' },
+        { team1: 'Yoakum', team2: 'Columbus', score1: 28, score2: 21, winner: 'Yoakum', date: '2025-12-12' },
+        { team1: 'Grandview', team2: 'Brock', score1: 35, score2: 28, winner: 'Grandview', date: '2025-12-12' },
       ],
       [
-        { team1: 'Yoakum', team2: 'Grandview', score1: 24, score2: 21, winner: 'Yoakum', venue: 'AT&T Stadium' },
+        { team1: 'Yoakum', team2: 'Grandview', score1: 24, score2: 21, winner: 'Yoakum', venue: 'AT&T Stadium', date: '2025-12-18' },
       ],
     ],
     'II': [
       [
-        { team1: 'Wall', team2: 'Gunter', score1: 35, score2: 21, winner: 'Wall' },
-        { team1: 'Newton', team2: 'Franklin', score1: 42, score2: 14, winner: 'Newton' },
+        { team1: 'Wall', team2: 'Gunter', score1: 35, score2: 21, winner: 'Wall', date: '2025-12-12' },
+        { team1: 'Newton', team2: 'Franklin', score1: 42, score2: 14, winner: 'Newton', date: '2025-12-12' },
       ],
       [
-        { team1: 'Wall', team2: 'Newton', score1: 28, score2: 21, winner: 'Wall', venue: 'AT&T Stadium' },
+        { team1: 'Wall', team2: 'Newton', score1: 28, score2: 21, winner: 'Wall', venue: 'AT&T Stadium', date: '2025-12-18' },
       ],
     ],
   },
   '2A': {
     'I': [
       [
-        { team1: 'Hamilton', team2: 'Ganado', score1: 35, score2: 28, winner: 'Hamilton' },
-        { team1: 'Joaquin', team2: 'Timpson', score1: 28, score2: 21, winner: 'Joaquin' },
+        { team1: 'Hamilton', team2: 'Ganado', score1: 35, score2: 28, winner: 'Hamilton', date: '2025-12-12' },
+        { team1: 'Joaquin', team2: 'Timpson', score1: 28, score2: 21, winner: 'Joaquin', date: '2025-12-12' },
       ],
       [
-        { team1: 'Hamilton', team2: 'Joaquin', score1: 42, score2: 28, winner: 'Hamilton', venue: 'AT&T Stadium' },
+        { team1: 'Hamilton', team2: 'Joaquin', score1: 42, score2: 28, winner: 'Hamilton', venue: 'AT&T Stadium', date: '2025-12-17' },
       ],
     ],
     'II': [
       [
-        { team1: 'Muenster', team2: 'Mart', score1: 35, score2: 14, winner: 'Muenster' },
-        { team1: 'Shiner', team2: 'Refugio', score1: 28, score2: 21, winner: 'Shiner' },
+        { team1: 'Muenster', team2: 'Mart', score1: 35, score2: 14, winner: 'Muenster', date: '2025-12-12' },
+        { team1: 'Shiner', team2: 'Refugio', score1: 28, score2: 21, winner: 'Shiner', date: '2025-12-12' },
       ],
       [
-        { team1: 'Muenster', team2: 'Shiner', score1: 35, score2: 28, winner: 'Muenster', venue: 'AT&T Stadium' },
+        { team1: 'Muenster', team2: 'Shiner', score1: 35, score2: 28, winner: 'Muenster', venue: 'AT&T Stadium', date: '2025-12-18' },
       ],
     ],
   },
   '1A': {
     'I': [
       [
-        { team1: 'Gordon', team2: 'Strawn', score1: 72, score2: 36, winner: 'Gordon' },
-        { team1: 'Rankin', team2: 'Balmorhea', score1: 64, score2: 42, winner: 'Rankin' },
+        { team1: 'Gordon', team2: 'Strawn', score1: 72, score2: 36, winner: 'Gordon', date: '2025-12-11' },
+        { team1: 'Rankin', team2: 'Balmorhea', score1: 64, score2: 42, winner: 'Rankin', date: '2025-12-11' },
       ],
       [
-        { team1: 'Gordon', team2: 'Rankin', score1: 69, score2: 22, winner: 'Gordon', venue: 'AT&T Stadium' },
+        { team1: 'Gordon', team2: 'Rankin', score1: 69, score2: 22, winner: 'Gordon', venue: 'AT&T Stadium', date: '2025-12-17' },
       ],
     ],
     'II': [
       [
-        { team1: 'Jayton', team2: 'Guthrie', score1: 86, score2: 48, winner: 'Jayton' },
-        { team1: 'Richland Springs', team2: 'Cherokee', score1: 72, score2: 52, winner: 'Richland Springs' },
+        { team1: 'Jayton', team2: 'Guthrie', score1: 86, score2: 48, winner: 'Jayton', date: '2025-12-11' },
+        { team1: 'Richland Springs', team2: 'Cherokee', score1: 72, score2: 52, winner: 'Richland Springs', date: '2025-12-11' },
       ],
       [
-        { team1: 'Jayton', team2: 'Richland Springs', score1: 94, score2: 52, winner: 'Jayton', venue: 'AT&T Stadium' },
+        { team1: 'Jayton', team2: 'Richland Springs', score1: 94, score2: 52, winner: 'Jayton', venue: 'AT&T Stadium', date: '2025-12-17' },
       ],
     ],
   },
 };
 
 const roundNames = ['State Semifinals', 'State Championship'];
+
+// Helper to format date
+const formatDate = (dateStr?: string) => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+};
 
 export default function PlayoffsPage() {
   const [selectedClass, setSelectedClass] = useState('6A');
@@ -229,8 +237,15 @@ export default function PlayoffsPage() {
                     {round.map((game, gameIdx) => (
                       <div
                         key={gameIdx}
-                        className="bg-gray-800/80 rounded-lg border border-gray-700 min-w-[240px] overflow-hidden"
+                        className="bg-gray-800/80 rounded-lg border border-gray-700 min-w-[260px] overflow-hidden"
                       >
+                        {/* Date Header */}
+                        {game.date && (
+                          <div className="px-3 py-1.5 bg-gray-900/50 border-b border-gray-700 text-center">
+                            <span className="text-xs text-gray-400">{formatDate(game.date)}</span>
+                          </div>
+                        )}
+                        
                         {/* Team 1 */}
                         <div className={`flex justify-between items-center px-3 py-2 ${
                           game.winner === game.team1 ? 'bg-green-900/30' : ''

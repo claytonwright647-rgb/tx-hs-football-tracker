@@ -119,14 +119,25 @@ export default function GameCard({ game }: GameCardProps) {
       </div>
 
 
-      {/* Bottom bar - Time and Venue */}
+      {/* Bottom bar - Date, Time and Venue */}
       <div className="px-4 py-2 bg-black/30 border-t border-gray-700/50">
         <div className="flex items-center justify-between text-xs">
-          <span className={`font-semibold ${
-            isLive ? 'text-red-400' : isFinal ? 'text-gray-400' : 'text-green-400'
-          }`}>
-            {formatGameTime()}
-          </span>
+          <div className="flex items-center gap-2">
+            {game.date && (
+              <span className="text-gray-400">
+                {new Date(game.date + 'T00:00:00').toLocaleDateString('en-US', { 
+                  month: 'short', 
+                  day: 'numeric',
+                  year: 'numeric'
+                })}
+              </span>
+            )}
+            <span className={`font-semibold ${
+              isLive ? 'text-red-400' : isFinal ? 'text-gray-400' : 'text-green-400'
+            }`}>
+              {formatGameTime()}
+            </span>
+          </div>
           <span className="text-gray-500 truncate max-w-[150px]">
             📍 {game.venue}
           </span>
