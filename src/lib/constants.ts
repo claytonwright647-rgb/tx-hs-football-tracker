@@ -111,14 +111,14 @@ export const CURRENT_CHAMPIONS = [
   { classification: '6A', division: 'II', champion: 'DeSoto', runnerUp: 'C.E. King', score: '55-27', titles: 2, date: '2025-12-20' },
   { classification: '5A', division: 'I', champion: 'Smithson Valley', runnerUp: 'Frisco Lone Star', score: '28-6', titles: 2, note: 'Back-to-back', date: '2025-12-19' },
   { classification: '5A', division: 'II', champion: 'South Oak Cliff', runnerUp: 'Richmond Randle', score: '35-19', titles: 3, note: '5th straight title game', date: '2025-12-20' },
-  { classification: '4A', division: 'I', champion: 'Stephenville', runnerUp: 'Kilgore', score: '35-21', titles: 7, date: '2025-12-19' },
+  { classification: '4A', division: 'I', champion: 'Stephenville', runnerUp: 'Kilgore', score: '35-21', titles: 7, note: '7th state title', date: '2025-12-19' },
   { classification: '4A', division: 'II', champion: 'Carthage', runnerUp: 'West Orange-Stark', score: '42-14', titles: 11, note: 'Perfect in title games', date: '2025-12-19' },
   { classification: '3A', division: 'I', champion: 'Yoakum', runnerUp: 'Grandview', score: '24-21', titles: 1, note: 'First title!', date: '2025-12-18' },
   { classification: '3A', division: 'II', champion: 'Wall', runnerUp: 'Newton', score: '28-21', titles: 1, note: 'First title!', date: '2025-12-18' },
   { classification: '2A', division: 'I', champion: 'Hamilton', runnerUp: 'Joaquin', score: '42-28', titles: 1, note: 'First title!', date: '2025-12-17' },
   { classification: '2A', division: 'II', champion: 'Muenster', runnerUp: 'Shiner', score: '35-28', titles: 2, note: 'Back-to-back', date: '2025-12-18' },
   { classification: '1A', division: 'I', champion: 'Gordon', runnerUp: 'Rankin', score: '69-22', titles: 3, note: 'THREE-PEAT! 🏆🏆🏆', date: '2025-12-17' },
-  { classification: '1A', division: 'II', champion: 'Jayton', runnerUp: 'Richland Springs', score: '94-52', titles: 1, date: '2025-12-17' },
+  { classification: '1A', division: 'II', champion: 'Jayton', runnerUp: 'Richland Springs', score: '94-52', titles: 1, note: 'First title!', date: '2025-12-17' },
 ];
 
 // Playoff Rounds
