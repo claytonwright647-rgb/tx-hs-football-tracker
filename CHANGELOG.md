@@ -1,5 +1,63 @@
 # Changelog - Texas HS Football Tracker
 
+## [0.5.0] - 2025-12-22 - Season Intelligence System 🧠
+
+### Added
+- **Season Intelligence Engine** (src/lib/seasonIntelligence.ts)
+  - Knows the full UIL football calendar: schedules, fall camp, scrimmages, regular season, playoffs, state championships
+  - Auto-detects current phase based on date
+  - Determines what data to fetch and when
+  - Calculates countdowns to key events
+  - Configurable for multiple years (2025, 2026+)
+
+- **Season Phases Supported**
+  | Phase | When | What It Does |
+  |-------|------|--------------|
+  | deep_offseason | Jan-May | Shows last season results |
+  | schedule_watch | June | Starts checking UIL/ESPN for schedules |
+  | preseason | July | Schedules available, season preview |
+  | fall_camp | Early Aug | Practice begins, countdown to kickoff |
+  | scrimmages | Late Aug | Tune-up games, light score fetching |
+  | regular_season | Sept-Nov | Full game mode, live scores every minute |
+  | playoffs | Nov-Dec | Bracket tracking, elimination rounds |
+  | state_championships | Mid-Dec | Finals at AT&T Stadium |
+  | postseason | Late Dec | Archive results, wait for next year |
+
+- **Cron Job System** (/api/cron)
+  - Runs every 6 hours (configurable per phase)
+  - Intelligently fetches only what's needed for current phase
+  - ESPN Texas HS Football API integration
+  - Ready for UIL and MaxPreps data sources
+
+- **Season Status API** (/api/season)
+  - Returns current phase, countdowns, and UI hints
+  - Used by frontend components for display
+
+- **SeasonIntelligence UI Component** (src/components/SeasonIntelligence.tsx)
+  - Displays current phase with icon and countdown
+  - Phase-specific colors and messaging
+  - Live ticker countdown to next event
+  - Shows "Games Active" indicator during season
+
+- **Vercel Cron Configuration** (vercel.json)
+  - Cron job runs every 6 hours
+  - Auto-adjusts behavior based on season phase
+
+### Technical Details
+- Phase detection uses date comparisons against SeasonConfig
+- Refresh intervals: 1 min during games, 6 hours in offseason
+- Data sources: ESPN HS Football API, UIL (planned), MaxPreps (planned)
+- Cron job secured with optional CRON_SECRET env var
+
+### What This Means
+The tracker now "knows" it's December 2025 (postseason), so it:
+- Shows "Season Complete" status
+- Displays countdown to 2026 schedules (June 1)
+- Doesn't waste API calls on live scores
+- Will auto-activate in June 2025 when schedule watch begins
+
+---
+
 ## [0.4.0] - 2025-12-22 - Football Field Visualization
 
 ### Added
