@@ -1,11 +1,22 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { SEASON_INFO } from '@/lib/constants';
+import SearchBar from './SearchBar';
+
+const navItems = [
+  { name: 'Scoreboard', href: '/' },
+  { name: 'Standings', href: '/standings' },
+  { name: 'Playoffs', href: '/playoffs' },
+  { name: 'Rankings', href: '/rankings' },
+];
 
 export default function Header() {
   const [currentTime, setCurrentTime] = useState<string>('');
   const [currentDate, setCurrentDate] = useState<string>('');
+  const pathname = usePathname();
 
   useEffect(() => {
     const updateTime = () => {
@@ -35,25 +46,19 @@ export default function Header() {
 
   return (
     <header className="relative overflow-hidden">
-      {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-gray-900 via-gray-900 to-transparent" />
-      
-      {/* Texas flag inspired accent */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 via-white to-red-600" />
       
       <div className="relative z-10 container mx-auto px-4 py-6">
-        {/* Top row - Logo and Title */}
+        {/* Top row */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            {/* Logo placeholder */}
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-3xl shadow-lg shadow-orange-500/30">
+          <Link href="/" className="flex items-center gap-4 hover:opacity-90 transition-opacity">
+            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-2xl md:text-3xl shadow-lg shadow-orange-500/30">
               🏈
             </div>
-            
             <div>
-              <h1 className="text-3xl md:text-4xl font-black tracking-tight">
-                <span className="bg-gradient-to-r from-orange-400 via-yellow-400 to-orange-400 bg-clip-text text-transparent drop-shadow-lg"
-                      style={{ textShadow: '0 0 40px rgba(251, 146, 60, 0.5)' }}>
+              <h1 className="text-2xl md:text-4xl font-black tracking-tight">
+                <span className="bg-gradient-to-r from-orange-400 via-yellow-400 to-orange-400 bg-clip-text text-transparent">
                   TEXAS HS FOOTBALL
                 </span>
               </h1>
@@ -61,40 +66,50 @@ export default function Header() {
                 UIL • TAPPS • {SEASON_INFO.year} Season
               </p>
             </div>
-          </div>
+          </Link>
 
-
-          {/* Time and Refresh */}
           <div className="flex items-center gap-4">
-            <div className="text-right">
+            <SearchBar />
+            <div className="text-right hidden sm:block">
               <div className="text-gray-400 text-sm">{currentDate}</div>
               <div className="text-white font-mono">{currentTime}</div>
             </div>
             <button
               onClick={() => window.location.reload()}
-              className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-500 rounded-lg transition-colors text-white font-semibold"
+              className="flex items-center gap-2 px-3 py-2 bg-orange-600 hover:bg-orange-500 rounded-lg transition-colors text-white font-semibold text-sm"
             >
-              <span>🔄</span>
-              <span>Refresh</span>
+              🔄 Refresh
             </button>
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <nav className="mt-6 flex flex-wrap gap-2">
-          {['Scoreboard', 'Standings', 'Playoffs', 'Rankings', 'Stats'].map((tab) => (
-            <button
-              key={tab}
-              className="px-4 py-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 hover:text-white transition-colors border border-gray-700 hover:border-gray-600"
-            >
-              {tab}
-            </button>
-          ))}
+
+        {/* Navigation */}
+        <nav className="mt-6 flex flex-wrap items-center gap-2">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`px-4 py-2 rounded-lg transition-colors font-medium ${
+                  isActive
+                    ? 'bg-orange-600 text-white'
+                    : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:text-white border border-gray-700 hover:border-gray-600'
+                }`}
+              >
+                {item.name}
+              </Link>
+            );
+          })}
+          
+          <div className="flex-1" />
+          
           <a
             href="https://www.wright-sports.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 rounded-lg bg-blue-600/30 hover:bg-blue-600/50 text-blue-400 hover:text-blue-300 transition-colors border border-blue-600/50 hover:border-blue-500"
+            className="px-4 py-2 rounded-lg bg-blue-600/30 hover:bg-blue-600/50 text-blue-400 hover:text-blue-300 transition-colors border border-blue-600/50 hover:border-blue-500 font-medium"
           >
             ← Pro Sports Tracker
           </a>
