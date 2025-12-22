@@ -1,5 +1,33 @@
 # Changelog - Texas HS Football Tracker
 
+## [0.4.0] - 2025-12-22 - Football Field Visualization
+
+### Added
+- **FootballField Component** (src/components/fields/FootballField.tsx)
+  - Visual football field with all 5-yard lines numbered (5, 10, 15...50)
+  - End zones with team colors and abbreviations
+  - Red zone shading (20 yards from each goal line)
+  - Hash marks across field
+  - Live game support: ball position, line of scrimmage (cyan), first down marker (yellow)
+  - Red zone indicator with pulsing badge
+
+- **GameDetailModal Component** (src/components/GameDetailModal.tsx)
+  - Modal popup when clicking on game cards (ready for when season starts)
+  - Shows score, teams, venue, date/time
+  - Integrates FootballField visualization
+  - Live game status indicator
+  - Supports upcoming, live, and final game states
+
+- **New Dependencies**
+  - lucide-react: Icons for modal UI
+
+### Notes
+- 2025 season starts August 28-30, 2025
+- Field visualization will show live data when games are in progress
+- Infrastructure ready for next season's live game tracking
+
+---
+
 ## [0.3.0] - 2025-12-22 - Cross-Site Navigation
 
 ### Added
