@@ -1,21 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Texas HS Football Tracker | UIL • TAPPS",
-  description: "Live scores, standings, playoffs, and rankings for Texas High School Football. Track all UIL and TAPPS classifications from 6A to Six-Man.",
-  keywords: "Texas high school football, UIL football, TAPPS football, Texas football scores, high school playoffs, six-man football",
+  title: "Texas HS Football Tracker | UIL & TAPPS",
+  description: "Live scores, standings, and playoff brackets for Texas high school football. Track UIL 6A through 1A Six-Man and TAPPS divisions.",
+  keywords: "Texas high school football, UIL football, TAPPS football, Texas playoffs, six-man football",
+  openGraph: {
+    title: "Texas HS Football Tracker",
+    description: "Live scores and standings for 1,400+ Texas high school football teams",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -25,9 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-950`}
-      >
+      <body className="antialiased">
         {children}
       </body>
     </html>
