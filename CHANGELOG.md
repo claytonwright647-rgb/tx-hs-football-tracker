@@ -12,19 +12,32 @@
   - Red zone indicator with pulsing badge
 
 - **GameDetailModal Component** (src/components/GameDetailModal.tsx)
-  - Modal popup when clicking on game cards (ready for when season starts)
+  - Modal popup when clicking on game cards
   - Shows score, teams, venue, date/time
   - Integrates FootballField visualization
   - Live game status indicator
   - Supports upcoming, live, and final game states
 
+- **Smart Auto-Detection**
+  - GameCards are now clickable - opens detail modal with football field
+  - Automatically detects live games via status field
+  - Shows live situation (down, distance, yard line, possession) when available
+  - Shows default field position for scheduled/final games
+  - Mock live game with situation data for testing
+
 - **New Dependencies**
   - lucide-react: Icons for modal UI
+
+### Technical Details
+- GameCard accepts onClick prop, triggers modal open
+- Scoreboard manages modal state (selectedGame, isModalOpen)
+- LiveGame type (extends Game) includes situation object
+- Situation data: possession, down, distance, yardLine, lastPlay
 
 ### Notes
 - 2025 season starts August 28-30, 2025
 - Field visualization will show live data when games are in progress
-- Infrastructure ready for next season's live game tracking
+- Infrastructure ready - when ESPN API provides situation data, it auto-displays
 
 ---
 
