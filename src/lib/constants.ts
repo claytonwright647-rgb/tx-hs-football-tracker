@@ -108,7 +108,7 @@ export const NEXT_SEASON = {
 // 2025-2026 State Champions (Season just completed Dec 20, 2025!)
 export const CURRENT_CHAMPIONS = [
   { classification: '6A', division: 'I', champion: 'North Shore', runnerUp: 'Duncanville', score: '10-7', titles: 6, note: 'First since 2021', date: '2025-12-20' },
-  { classification: '6A', division: 'II', champion: 'DeSoto', runnerUp: 'C.E. King', score: '55-27', titles: 2, date: '2025-12-20' },
+  { classification: '6A', division: 'II', champion: 'DeSoto', runnerUp: 'C.E. King', score: '55-27', titles: 2, note: '2nd state title', date: '2025-12-20' },
   { classification: '5A', division: 'I', champion: 'Smithson Valley', runnerUp: 'Frisco Lone Star', score: '28-6', titles: 2, note: 'Back-to-back', date: '2025-12-19' },
   { classification: '5A', division: 'II', champion: 'South Oak Cliff', runnerUp: 'Richmond Randle', score: '35-19', titles: 3, note: '5th straight title game', date: '2025-12-20' },
   { classification: '4A', division: 'I', champion: 'Stephenville', runnerUp: 'Kilgore', score: '35-21', titles: 7, note: '7th state title', date: '2025-12-19' },
