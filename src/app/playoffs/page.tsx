@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Header from '@/components/Header';
-import { CLASSIFICATIONS, CURRENT_CHAMPIONS } from '@/lib/constants';
+import { CLASSIFICATIONS, CURRENT_CHAMPIONS, SEASON_INFO } from '@/lib/constants';
 
 interface BracketGame {
   team1: string;
@@ -13,47 +13,133 @@ interface BracketGame {
   venue?: string;
 }
 
-// Full playoff bracket data for 6A-DI (2024-2025)
+// Full playoff bracket data for 2025-2026 season
 const bracketData: Record<string, Record<string, BracketGame[][]>> = {
   '6A': {
     'I': [
-      // Regional Finals (4 games)
+      // State Semifinals
       [
-        { team1: 'North Shore', team2: 'Atascocita', score1: 42, score2: 21, winner: 'North Shore' },
-        { team1: 'C.E. King', team2: 'Summer Creek', score1: 28, score2: 35, winner: 'Summer Creek' },
-        { team1: 'Duncanville', team2: 'Southlake Carroll', score1: 35, score2: 28, winner: 'Duncanville' },
-        { team1: 'Allen', team2: 'Westlake', score1: 21, score2: 28, winner: 'Westlake' },
+        { team1: 'North Shore', team2: 'Lake Travis', score1: 28, score2: 21, winner: 'North Shore' },
+        { team1: 'Duncanville', team2: 'Allen', score1: 35, score2: 28, winner: 'Duncanville' },
       ],
-      // State Semifinals (2 games)
-      [
-        { team1: 'North Shore', team2: 'Summer Creek', score1: 42, score2: 14, winner: 'North Shore' },
-        { team1: 'Duncanville', team2: 'Westlake', score1: 35, score2: 21, winner: 'Duncanville' },
-      ],
-      // State Championship (1 game)
+      // State Championship
       [
         { team1: 'North Shore', team2: 'Duncanville', score1: 10, score2: 7, winner: 'North Shore', venue: 'AT&T Stadium' },
       ],
     ],
     'II': [
       [
-        { team1: 'DeSoto', team2: 'South Grand Prairie', score1: 45, score2: 14, winner: 'DeSoto' },
-        { team1: 'Vandegrift', team2: 'Westwood', score1: 28, score2: 21, winner: 'Vandegrift' },
-        { team1: 'C.E. King', team2: 'Pearland', score1: 35, score2: 28, winner: 'C.E. King' },
-        { team1: 'Jersey Village', team2: 'Cy-Fair', score1: 21, score2: 14, winner: 'Jersey Village' },
-      ],
-      [
-        { team1: 'DeSoto', team2: 'Vandegrift', score1: 42, score2: 21, winner: 'DeSoto' },
-        { team1: 'C.E. King', team2: 'Jersey Village', score1: 38, score2: 14, winner: 'C.E. King' },
+        { team1: 'DeSoto', team2: 'Southlake Carroll', score1: 42, score2: 28, winner: 'DeSoto' },
+        { team1: 'C.E. King', team2: 'Vandegrift', score1: 58, score2: 41, winner: 'C.E. King' },
       ],
       [
         { team1: 'DeSoto', team2: 'C.E. King', score1: 55, score2: 27, winner: 'DeSoto', venue: 'AT&T Stadium' },
       ],
     ],
   },
+  '5A': {
+    'I': [
+      [
+        { team1: 'Smithson Valley', team2: 'Denton Ryan', score1: 35, score2: 21, winner: 'Smithson Valley' },
+        { team1: 'Frisco Lone Star', team2: 'College Station', score1: 28, score2: 14, winner: 'Frisco Lone Star' },
+      ],
+      [
+        { team1: 'Smithson Valley', team2: 'Frisco Lone Star', score1: 28, score2: 6, winner: 'Smithson Valley', venue: 'AT&T Stadium' },
+      ],
+    ],
+    'II': [
+      [
+        { team1: 'South Oak Cliff', team2: 'Boerne', score1: 42, score2: 14, winner: 'South Oak Cliff' },
+        { team1: 'Richmond Randle', team2: 'Iowa Colony', score1: 35, score2: 21, winner: 'Richmond Randle' },
+      ],
+      [
+        { team1: 'South Oak Cliff', team2: 'Richmond Randle', score1: 35, score2: 19, winner: 'South Oak Cliff', venue: 'AT&T Stadium' },
+      ],
+    ],
+  },
+  '4A': {
+    'I': [
+      [
+        { team1: 'Stephenville', team2: 'China Spring', score1: 42, score2: 21, winner: 'Stephenville' },
+        { team1: 'Kilgore', team2: 'Celina', score1: 28, score2: 24, winner: 'Kilgore' },
+      ],
+      [
+        { team1: 'Stephenville', team2: 'Kilgore', score1: 35, score2: 21, winner: 'Stephenville', venue: 'AT&T Stadium' },
+      ],
+    ],
+    'II': [
+      [
+        { team1: 'Carthage', team2: 'Cuero', score1: 49, score2: 14, winner: 'Carthage' },
+        { team1: 'West Orange-Stark', team2: 'Bellville', score1: 35, score2: 28, winner: 'West Orange-Stark' },
+      ],
+      [
+        { team1: 'Carthage', team2: 'West Orange-Stark', score1: 42, score2: 14, winner: 'Carthage', venue: 'AT&T Stadium' },
+      ],
+    ],
+  },
+  '3A': {
+    'I': [
+      [
+        { team1: 'Yoakum', team2: 'Columbus', score1: 28, score2: 21, winner: 'Yoakum' },
+        { team1: 'Grandview', team2: 'Brock', score1: 35, score2: 28, winner: 'Grandview' },
+      ],
+      [
+        { team1: 'Yoakum', team2: 'Grandview', score1: 24, score2: 21, winner: 'Yoakum', venue: 'AT&T Stadium' },
+      ],
+    ],
+    'II': [
+      [
+        { team1: 'Wall', team2: 'Gunter', score1: 35, score2: 21, winner: 'Wall' },
+        { team1: 'Newton', team2: 'Franklin', score1: 42, score2: 14, winner: 'Newton' },
+      ],
+      [
+        { team1: 'Wall', team2: 'Newton', score1: 28, score2: 21, winner: 'Wall', venue: 'AT&T Stadium' },
+      ],
+    ],
+  },
+  '2A': {
+    'I': [
+      [
+        { team1: 'Hamilton', team2: 'Ganado', score1: 35, score2: 28, winner: 'Hamilton' },
+        { team1: 'Joaquin', team2: 'Timpson', score1: 28, score2: 21, winner: 'Joaquin' },
+      ],
+      [
+        { team1: 'Hamilton', team2: 'Joaquin', score1: 42, score2: 28, winner: 'Hamilton', venue: 'AT&T Stadium' },
+      ],
+    ],
+    'II': [
+      [
+        { team1: 'Muenster', team2: 'Mart', score1: 35, score2: 14, winner: 'Muenster' },
+        { team1: 'Shiner', team2: 'Refugio', score1: 28, score2: 21, winner: 'Shiner' },
+      ],
+      [
+        { team1: 'Muenster', team2: 'Shiner', score1: 35, score2: 28, winner: 'Muenster', venue: 'AT&T Stadium' },
+      ],
+    ],
+  },
+  '1A': {
+    'I': [
+      [
+        { team1: 'Gordon', team2: 'Strawn', score1: 72, score2: 36, winner: 'Gordon' },
+        { team1: 'Rankin', team2: 'Balmorhea', score1: 64, score2: 42, winner: 'Rankin' },
+      ],
+      [
+        { team1: 'Gordon', team2: 'Rankin', score1: 69, score2: 22, winner: 'Gordon', venue: 'AT&T Stadium' },
+      ],
+    ],
+    'II': [
+      [
+        { team1: 'Jayton', team2: 'Guthrie', score1: 86, score2: 48, winner: 'Jayton' },
+        { team1: 'Richland Springs', team2: 'Cherokee', score1: 72, score2: 52, winner: 'Richland Springs' },
+      ],
+      [
+        { team1: 'Jayton', team2: 'Richland Springs', score1: 94, score2: 52, winner: 'Jayton', venue: 'AT&T Stadium' },
+      ],
+    ],
+  },
 };
 
-const roundNames = ['Regional Finals', 'State Semifinals', 'State Championship'];
-
+const roundNames = ['State Semifinals', 'State Championship'];
 
 export default function PlayoffsPage() {
   const [selectedClass, setSelectedClass] = useState('6A');
@@ -70,7 +156,7 @@ export default function PlayoffsPage() {
       <Header />
       
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-white mb-2">2024-2025 Playoffs</h1>
+        <h1 className="text-3xl font-bold text-white mb-2">{SEASON_INFO.displayYear} Playoffs</h1>
         <p className="text-gray-400 mb-6">State Championship Brackets</p>
         
         {/* Classification & Division Selectors */}
@@ -122,6 +208,9 @@ export default function PlayoffsPage() {
                 <p className="text-gray-400">
                   defeated {champion.runnerUp} {champion.score && `(${champion.score})`}
                 </p>
+                {champion.note && (
+                  <p className="text-yellow-400/80 text-sm mt-1">{champion.note}</p>
+                )}
               </div>
             </div>
           </div>
@@ -140,7 +229,7 @@ export default function PlayoffsPage() {
                     {round.map((game, gameIdx) => (
                       <div
                         key={gameIdx}
-                        className="bg-gray-800/80 rounded-lg border border-gray-700 min-w-[220px] overflow-hidden"
+                        className="bg-gray-800/80 rounded-lg border border-gray-700 min-w-[240px] overflow-hidden"
                       >
                         {/* Team 1 */}
                         <div className={`flex justify-between items-center px-3 py-2 ${
@@ -186,6 +275,9 @@ export default function PlayoffsPage() {
                   <div className="bg-yellow-600/20 border-2 border-yellow-500 rounded-lg p-4 text-center">
                     <div className="text-3xl mb-2">🏆</div>
                     <div className="text-yellow-400 font-bold text-lg">{champion.champion}</div>
+                    {champion.titles > 1 && (
+                      <div className="text-gray-500 text-xs mt-1">{champion.titles} titles</div>
+                    )}
                   </div>
                 </div>
               )}
@@ -194,6 +286,16 @@ export default function PlayoffsPage() {
         ) : (
           <div className="text-center py-12 text-gray-400">
             <p>Bracket data not available for {selectedClass} Division {selectedDiv}</p>
+          </div>
+        )}
+
+        {/* Six-Man Note */}
+        {selectedClass === '1A' && (
+          <div className="mt-6 p-4 rounded-lg bg-yellow-900/20 border border-yellow-700/30">
+            <p className="text-yellow-400 text-sm">
+              <strong>Six-Man Football:</strong> 1A division plays six-man football with modified rules - 
+              80×40 yard field, 15 yards for first down, 4-point field goals, and high-scoring games are the norm!
+            </p>
           </div>
         )}
       </div>
