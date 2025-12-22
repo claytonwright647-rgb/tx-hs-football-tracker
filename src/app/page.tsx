@@ -1,5 +1,6 @@
 import Header from '@/components/Header';
 import ClassificationCard from '@/components/ClassificationCard';
+import SeasonIntelligence from '@/components/SeasonIntelligence';
 import { CLASSIFICATIONS, CURRENT_CHAMPIONS, SEASON_INFO, NEXT_SEASON } from '@/lib/constants';
 
 export default function Home() {
@@ -8,6 +9,9 @@ export default function Home() {
       <Header />
       
       <div className="container mx-auto px-4 py-8">
+        {/* Season Intelligence Banner */}
+        <SeasonIntelligence />
+
         {/* Season Complete Banner */}
         <div className="mb-8 p-6 rounded-xl bg-gradient-to-r from-yellow-900/30 via-orange-900/30 to-red-900/30 border border-yellow-600/30">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">

@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import GameCard from '@/components/GameCard';
+import GameDetailModal from '@/components/GameDetailModal';
+import SeasonIntelligence from '@/components/SeasonIntelligence';
 import { CLASSIFICATIONS } from '@/lib/constants';
-import { Game } from '@/lib/types';
+import { Game, LiveGame } from '@/lib/types';
 
 // Mock games data - 2025-2026 State Championship games
 const allGames: Game[] = [
@@ -107,6 +109,18 @@ export default function ScoreboardPage() {
   const [selectedClass, setSelectedClass] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<FilterType>('all');
   const [games, setGames] = useState<Game[]>(allGames);
+  const [selectedGame, setSelectedGame] = useState<Game | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleGameClick = (game: Game) => {
+    setSelectedGame(game);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedGame(null);
+  };
 
   // Filter games
   useEffect(() => {
@@ -137,6 +151,9 @@ export default function ScoreboardPage() {
       <Header />
       
       <div className="container mx-auto px-4 py-8">
+        {/* Season Intelligence Banner */}
+        <SeasonIntelligence />
+
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-white">Scoreboard</h1>
@@ -202,7 +219,11 @@ export default function ScoreboardPage() {
         {games.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {games.map((game) => (
-              <GameCard key={game.id} game={game} />
+              <GameCard 
+                key={game.id} 
+                game={game} 
+                onClick={() => handleGameClick(game)}
+              />
             ))}
           </div>
         ) : (
@@ -233,6 +254,29 @@ export default function ScoreboardPage() {
             </div>
           </div>
         </div>
+
+        {/* Game Detail Modal */}
+        <GameDetailModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          game={selectedGame ? {
+            homeTeam: selectedGame.homeTeam.name,
+            awayTeam: selectedGame.awayTeam.name,
+            homeScore: selectedGame.homeScore,
+            awayScore: selectedGame.awayScore,
+            homeAbbrev: selectedGame.homeTeam.name.substring(0, 3).toUpperCase(),
+            awayAbbrev: selectedGame.awayTeam.name.substring(0, 3).toUpperCase(),
+            homeColor: selectedGame.homeTeam.colors?.primary?.replace('#', ''),
+            awayColor: selectedGame.awayTeam.colors?.primary?.replace('#', ''),
+            status: selectedGame.status === 'in_progress' || selectedGame.status === 'halftime' ? 'in' 
+              : selectedGame.status === 'final' ? 'final' : 'scheduled',
+            venue: selectedGame.venue,
+            date: selectedGame.date,
+            time: selectedGame.time,
+            classification: `${selectedGame.classification}${selectedGame.division ? `-${selectedGame.division}` : ''}`,
+            situation: (selectedGame as LiveGame).situation,
+          } : null}
+        />
       </div>
     </main>
   );
