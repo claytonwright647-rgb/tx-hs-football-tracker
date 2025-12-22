@@ -1,12 +1,14 @@
 // Texas High School Football Constants
 
-export const CLASSIFICATIONS = [
+import { Classification } from './types';
+
+export const CLASSIFICATIONS: Classification[] = [
   {
     id: '6A',
     name: '6A',
     fullName: 'Conference 6A',
     divisions: ['Division I', 'Division II'],
-    footballType: '11-man',
+    footballType: '11-man' as const,
     playoffTeams: 4,
     color: '#1e40af',
     borderColor: 'border-blue-600',
@@ -19,7 +21,7 @@ export const CLASSIFICATIONS = [
     name: '5A',
     fullName: 'Conference 5A',
     divisions: ['Division I', 'Division II'],
-    footballType: '11-man',
+    footballType: '11-man' as const,
     playoffTeams: 4,
     color: '#7c3aed',
     borderColor: 'border-purple-600',
@@ -32,7 +34,7 @@ export const CLASSIFICATIONS = [
     name: '4A',
     fullName: 'Conference 4A',
     divisions: ['Division I', 'Division II'],
-    footballType: '11-man',
+    footballType: '11-man' as const,
     playoffTeams: 4,
     color: '#059669',
     borderColor: 'border-emerald-600',
@@ -45,7 +47,7 @@ export const CLASSIFICATIONS = [
     name: '3A',
     fullName: 'Conference 3A',
     divisions: ['Division I', 'Division II'],
-    footballType: '11-man',
+    footballType: '11-man' as const,
     playoffTeams: 4,
     color: '#d97706',
     borderColor: 'border-orange-600',
@@ -58,7 +60,7 @@ export const CLASSIFICATIONS = [
     name: '2A',
     fullName: 'Conference 2A',
     divisions: ['Division I', 'Division II'],
-    footballType: '11-man',
+    footballType: '11-man' as const,
     playoffTeams: 4,
     color: '#dc2626',
     borderColor: 'border-red-600',
@@ -71,7 +73,7 @@ export const CLASSIFICATIONS = [
     name: '1A',
     fullName: 'Conference 1A (Six-Man)',
     divisions: ['Division I', 'Division II'],
-    footballType: '6-man',
+    footballType: '6-man' as const,
     playoffTeams: 2,
     color: '#eab308',
     borderColor: 'border-yellow-600',
