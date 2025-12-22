@@ -1,13 +1,14 @@
 'use client';
 
-import { Game } from '@/lib/types';
+import { Game, LiveGame } from '@/lib/types';
 import { CLASSIFICATIONS } from '@/lib/constants';
 
 interface GameCardProps {
-  game: Game;
+  game: Game | LiveGame;
+  onClick?: () => void;
 }
 
-export default function GameCard({ game }: GameCardProps) {
+export default function GameCard({ game, onClick }: GameCardProps) {
   const classification = CLASSIFICATIONS.find((c) => c.id === game.classification);
   const isLive = game.status === 'in_progress' || game.status === 'halftime';
   const isFinal = game.status === 'final';
@@ -36,9 +37,12 @@ export default function GameCard({ game }: GameCardProps) {
 
   return (
     <div
+      onClick={onClick}
       className={`relative rounded-xl bg-gray-800/80 border ${
         isLive ? 'border-red-500 shadow-lg shadow-red-500/20' : 'border-gray-700'
-      } overflow-hidden transition-all hover:scale-[1.02] min-w-[300px] max-w-[350px]`}
+      } overflow-hidden transition-all hover:scale-[1.02] min-w-[300px] max-w-[350px] ${
+        onClick ? 'cursor-pointer' : ''
+      }`}
     >
       {/* Top bar with classification */}
       <div

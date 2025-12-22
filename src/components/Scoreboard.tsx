@@ -2,12 +2,63 @@
 
 import { useState } from 'react';
 import { CLASSIFICATIONS } from '@/lib/constants';
-import { Game, Classification } from '@/lib/types';
+import { Game, Classification, LiveGame } from '@/lib/types';
 import ClassificationCard from './ClassificationCard';
 import GameCard from './GameCard';
+import GameDetailModal from './GameDetailModal';
 
-// Mock data for demonstration
-const mockGames: Game[] = [
+// Mock data for demonstration - includes live game with situation data
+const mockGames: (Game | LiveGame)[] = [
+  // Live game example with field situation
+  {
+    id: 'live-1',
+    homeTeam: {
+      id: 'stephenville',
+      name: 'Stephenville',
+      mascot: 'Yellow Jackets',
+      city: 'Stephenville',
+      school: 'Stephenville High School',
+      classification: '4A',
+      district: '5-4A',
+      region: 1,
+      record: '15-0',
+      colors: { primary: '#FFD700', secondary: '#000000' },
+    },
+    awayTeam: {
+      id: 'kilgore',
+      name: 'Kilgore',
+      mascot: 'Bulldogs',
+      city: 'Kilgore',
+      school: 'Kilgore High School',
+      classification: '4A',
+      district: '9-4A',
+      region: 2,
+      record: '14-1',
+      colors: { primary: '#8B0000', secondary: '#FFFFFF' },
+    },
+    homeScore: 21,
+    awayScore: 14,
+    status: 'in_progress',
+    quarter: 3,
+    timeRemaining: '6:42',
+    classification: '4A',
+    division: 'I',
+    isPlayoff: true,
+    playoffRound: 'State Championship',
+    venue: 'AT&T Stadium',
+    city: 'Arlington',
+    date: '2025-12-19',
+    time: '11:00 AM',
+    isDistrictGame: false,
+    // Live situation data - shows on football field
+    situation: {
+      possession: 'STV',
+      down: 2,
+      distance: 7,
+      yardLine: 35,
+      lastPlay: 'J. Smith rush for 3 yards',
+    },
+  } as LiveGame,
   {
     id: '1',
     homeTeam: {
@@ -130,6 +181,18 @@ interface ScoreboardProps {
 export default function Scoreboard({ selectedClassification }: ScoreboardProps) {
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
+  const [selectedGame, setSelectedGame] = useState<Game | LiveGame | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleGameClick = (game: Game | LiveGame) => {
+    setSelectedGame(game);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedGame(null);
+  };
 
   // Filter games based on classification
   const filteredGames = activeFilter === 'all' 
@@ -203,7 +266,11 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
       {/* Games Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filteredGames.map((game) => (
-          <GameCard key={game.id} game={game} />
+          <GameCard 
+            key={game.id} 
+            game={game} 
+            onClick={() => handleGameClick(game)}
+          />
         ))}
       </div>
 
@@ -214,6 +281,29 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
           <p className="text-gray-500 text-sm mt-2">Check back during the season!</p>
         </div>
       )}
+
+      {/* Game Detail Modal */}
+      <GameDetailModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        game={selectedGame ? {
+          homeTeam: selectedGame.homeTeam.name,
+          awayTeam: selectedGame.awayTeam.name,
+          homeScore: selectedGame.homeScore,
+          awayScore: selectedGame.awayScore,
+          homeAbbrev: selectedGame.homeTeam.name.substring(0, 3).toUpperCase(),
+          awayAbbrev: selectedGame.awayTeam.name.substring(0, 3).toUpperCase(),
+          homeColor: selectedGame.homeTeam.colors?.primary?.replace('#', ''),
+          awayColor: selectedGame.awayTeam.colors?.primary?.replace('#', ''),
+          status: selectedGame.status === 'in_progress' || selectedGame.status === 'halftime' ? 'in' 
+            : selectedGame.status === 'final' ? 'final' : 'scheduled',
+          venue: selectedGame.venue,
+          date: selectedGame.date,
+          time: selectedGame.time,
+          classification: `${selectedGame.classification}${selectedGame.division ? `-${selectedGame.division}` : ''}`,
+          situation: (selectedGame as any).situation,
+        } : null}
+      />
     </div>
   );
 }
