@@ -74,3 +74,36 @@ export default function ClassificationCard({
     </div>
   );
 }
+
+      {/* Divisions */}
+      <div className="grid grid-cols-2 gap-2 mb-3">
+        {classification.divisions.map((division) => {
+          const champ = champions.find((c) => c.division === division.split(' ')[1]);
+          return (
+            <div
+              key={division}
+              className="bg-black/30 rounded-lg p-2 text-center"
+            >
+              <div className="text-gray-400 text-xs">{division}</div>
+              {champ && (
+                <div className="text-white text-sm font-semibold truncate">
+                  🏆 {champ.champion}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Stats Row */}
+      <div className="flex justify-between text-sm">
+        <div className="text-gray-400">
+          <span className="text-white font-semibold">{gamesThisWeek}</span> games this week
+        </div>
+        <button className={`${classification.textColor} hover:underline font-semibold`}>
+          View All →
+        </button>
+      </div>
+    </div>
+  );
+}
