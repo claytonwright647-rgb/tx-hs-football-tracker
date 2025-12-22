@@ -7,7 +7,8 @@ import { SEASON_INFO } from '@/lib/constants';
 import SearchBar from './SearchBar';
 
 const navItems = [
-  { name: 'Scoreboard', href: '/' },
+  { name: 'Home', href: '/' },
+  { name: 'Scoreboard', href: '/scoreboard' },
   { name: 'Standings', href: '/standings' },
   { name: 'Playoffs', href: '/playoffs' },
   { name: 'Rankings', href: '/rankings' },
