@@ -65,9 +65,18 @@ export default function Home() {
                 {champ.note && (
                   <p className="text-yellow-400/80 text-xs mt-1 font-medium">{champ.note}</p>
                 )}
-                {champ.titles > 1 && (
-                  <p className="text-gray-600 text-xs mt-1">{champ.titles} all-time titles</p>
-                )}
+                <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-700/50">
+                  <span className="text-gray-500 text-xs">
+                    {new Date(champ.date + 'T00:00:00').toLocaleDateString('en-US', { 
+                      month: 'short', 
+                      day: 'numeric',
+                      year: 'numeric'
+                    })}
+                  </span>
+                  {champ.titles > 1 && (
+                    <span className="text-gray-600 text-xs">{champ.titles} titles</span>
+                  )}
+                </div>
               </div>
             ))}
           </div>
