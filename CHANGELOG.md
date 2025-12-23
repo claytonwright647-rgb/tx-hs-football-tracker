@@ -1,5 +1,20 @@
 # Changelog - Texas HS Football Tracker
 
+## [0.5.1] - 2025-12-23 - Last Scorer Display ⚡
+
+### Added
+- **Last Scorer on Game Cards**
+  - Shows "Last Score: TEAM ⚡ Player Name" on live game cards
+  - Shows "Final Score: TEAM ⚡ Player Name" on completed game cards
+  - Team name color-coded (blue for home, orange for away)
+
+### Changed
+- Updated `LiveGame` type to include `lastScorer` and `lastScorerTeam` fields
+- GameCard component now displays lastScorer when available
+- Mock game data includes example lastScorer
+
+---
+
 ## [0.5.0] - 2025-12-22 - Season Intelligence System 🧠
 
 ### Added
