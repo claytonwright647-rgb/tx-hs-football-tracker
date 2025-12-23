@@ -8,6 +8,11 @@ interface GameCardProps {
   onClick?: () => void;
 }
 
+// Type guard to check if game is a LiveGame
+function isLiveGame(game: Game | LiveGame): game is LiveGame {
+  return 'lastScorer' in game || 'situation' in game;
+}
+
 export default function GameCard({ game, onClick }: GameCardProps) {
   const classification = CLASSIFICATIONS.find((c) => c.id === game.classification);
   const isLive = game.status === 'in_progress' || game.status === 'halftime';
@@ -121,6 +126,19 @@ export default function GameCard({ game, onClick }: GameCardProps) {
           </span>
         </div>
       </div>
+
+      {/* Last Scorer - shown for live and completed games */}
+      {isLiveGame(game) && game.lastScorer && (
+        <div className="px-4 py-2 flex items-center justify-center gap-2 text-sm bg-gray-900/50">
+          <span className="text-gray-500 text-xs">{isFinal ? 'Final Score:' : 'Last Score:'}</span>
+          <span className={`font-semibold ${
+            game.lastScorerTeam === 'home' ? 'text-blue-400' : 'text-orange-400'
+          }`}>
+            {game.lastScorerTeam === 'home' ? game.homeTeam.name : game.awayTeam.name}
+          </span>
+          <span className="text-white">⚡ {game.lastScorer}</span>
+        </div>
+      )}
 
 
       {/* Bottom bar - Date, Time and Venue */}

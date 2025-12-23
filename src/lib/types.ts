@@ -65,6 +65,8 @@ export interface LiveGame extends Game {
     yardLine?: number;
     lastPlay?: string;
   };
+  lastScorer?: string;
+  lastScorerTeam?: 'home' | 'away';
 }
 
 export interface PlayoffBracket {

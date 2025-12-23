@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { Game, Team } from '@/lib/types';
+import { Game, Team, LiveGame } from '@/lib/types';
 
 // Mock data - will be replaced with actual API calls to MaxPreps/UIL
 const mockTeams: { [key: string]: Team } = {
@@ -30,7 +30,7 @@ const mockTeams: { [key: string]: Team } = {
 };
 
 
-const mockGames: Game[] = [
+const mockGames: LiveGame[] = [
   {
     id: '1',
     homeTeam: mockTeams.duncanville,
@@ -48,6 +48,8 @@ const mockGames: Game[] = [
     time: '2024-12-21T19:00:00',
     broadcast: 'ESPN2',
     isDistrictGame: false,
+    lastScorer: 'K. Williams',
+    lastScorerTeam: 'away',
   },
 ];
 
