@@ -1,5 +1,28 @@
 # Changelog - Texas HS Football Tracker
 
+## [0.6.0] - 2025-12-26 - GamePreviewModal 📊
+
+### Added
+- **Clickable Game Preview Modal** for upcoming games
+  - Click any upcoming game card to open full preview
+  - 4-tab interface: Overview, Matchup, Stats, Players
+  - Win probability bar with team colors
+  - Recent form (W/L dots for last 5 games)
+  - Side-by-side stat comparison bars
+  - Key player stats for each team
+  
+- **Tab Details:**
+  - **Overview** - Win probability, game time, venue, recent form
+  - **Matchup** - Head-to-head history, current streak
+  - **Stats** - PPG, YPG, defensive stats with visual bars
+  - **Players** - Top performers with season stats
+
+- **Files Added:**
+  - `src/components/GamePreviewModal.tsx` (355 lines)
+  - Uses FootballField component for live games
+
+---
+
 ## [0.5.1] - 2025-12-23 - Last Scorer Display ⚡
 
 ### Added
