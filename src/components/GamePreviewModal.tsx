@@ -182,6 +182,208 @@ function FormDots({ form }: { form: { last5: Array<{ result: 'W' | 'L'; score: s
 }
 
 
+// ========== TAB COMPONENTS ==========
+
+// Overview Tab - Quick summary
+function OverviewTab({ game, data }: { game: HSGame; data?: HSGamePreviewData | null }) {
+  return (
+    <div className="space-y-4">
+      {/* Quick Preview */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-gray-800 rounded-lg p-4">
+          <h4 className="text-sm text-gray-400 mb-2">Points Per Game</h4>
+          <StatBar 
+            label="PPG" 
+            homeValue={data?.homeStats?.pointsPerGame || 0} 
+            awayValue={data?.awayStats?.pointsPerGame || 0} 
+          />
+        </div>
+        <div className="bg-gray-800 rounded-lg p-4">
+          <h4 className="text-sm text-gray-400 mb-2">Points Allowed</h4>
+          <StatBar 
+            label="PA/G" 
+            homeValue={data?.homeStats?.pointsAllowedPerGame || 0} 
+            awayValue={data?.awayStats?.pointsAllowedPerGame || 0}
+            higherIsBetter={false}
+          />
+        </div>
+      </div>
+      
+      {/* Recent Form */}
+      {(data?.homeForm || data?.awayForm) && (
+        <div className="bg-gray-800 rounded-lg p-4">
+          <h4 className="text-sm text-gray-400 mb-3">Recent Form</h4>
+          <div className="space-y-3">
+            {data?.awayForm && (
+              <div className="flex items-center justify-between">
+                <span className="text-gray-300 text-sm">{game.awayAbbrev || game.awayTeam}</span>
+                <FormDots form={data.awayForm} />
+              </div>
+            )}
+            {data?.homeForm && (
+              <div className="flex items-center justify-between">
+                <span className="text-gray-300 text-sm">{game.homeAbbrev || game.homeTeam}</span>
+                <FormDots form={data.homeForm} />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Playoff Implications */}
+      {data?.playoffImplications && (
+        <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4">
+          <div className="flex items-start gap-2">
+            <Trophy className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <h4 className="text-sm font-semibold text-orange-400 mb-1">Playoff Implications</h4>
+              <p className="text-sm text-gray-300">{data.playoffImplications}</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Matchup Tab - Head-to-head comparison
+function MatchupTab({ game, data }: { game: HSGame; data?: HSGamePreviewData | null }) {
+  return (
+    <div className="space-y-4">
+      {/* Head to Head */}
+      {data?.headToHead && (
+        <div className="bg-gray-800 rounded-lg p-4">
+          <h4 className="text-sm text-gray-400 mb-3 flex items-center gap-2">
+            <Shield className="w-4 h-4" /> All-Time Series
+          </h4>
+          <div className="flex items-center justify-center gap-8">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-white">{data.headToHead.allTime.away}</div>
+              <div className="text-sm text-gray-400">{game.awayAbbrev || game.awayTeam}</div>
+            </div>
+            <div className="text-gray-500">-</div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-white">{data.headToHead.allTime.home}</div>
+              <div className="text-sm text-gray-400">{game.homeAbbrev || game.homeTeam}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Win Probability Estimate */}
+      <div className="bg-gray-800 rounded-lg p-4">
+        <h4 className="text-sm text-gray-400 mb-3">Win Probability (Estimated)</h4>
+        <WinProbabilityBar 
+          homeProb={55} 
+          awayProb={45}
+          homeColor={game.homeColor || '#f97316'}
+          awayColor={game.awayColor || '#6366f1'}
+          homeName={game.homeAbbrev || game.homeTeam}
+          awayName={game.awayAbbrev || game.awayTeam}
+        />
+      </div>
+
+      {/* Last 5 Meetings */}
+      {data?.headToHead?.last5 && data.headToHead.last5.length > 0 && (
+        <div className="bg-gray-800 rounded-lg p-4">
+          <h4 className="text-sm text-gray-400 mb-3">Last 5 Meetings</h4>
+          <div className="space-y-2">
+            {data.headToHead.last5.map((meeting, idx) => (
+              <div key={idx} className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">{meeting.date}</span>
+                <span className={`font-semibold ${meeting.winner === game.homeTeam ? 'text-orange-400' : 'text-indigo-400'}`}>
+                  {meeting.homeScore} - {meeting.awayScore}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Stats Tab - Detailed statistics
+function StatsTab({ game, data }: { game: HSGame; data?: HSGamePreviewData | null }) {
+  const homeStats = data?.homeStats;
+  const awayStats = data?.awayStats;
+
+  return (
+    <div className="space-y-3">
+      <div className="bg-gray-800 rounded-lg p-4 space-y-4">
+        <h4 className="text-sm text-gray-400 flex items-center gap-2">
+          <Activity className="w-4 h-4" /> Offensive Stats
+        </h4>
+        <StatBar label="Points/Game" homeValue={homeStats?.pointsPerGame || 0} awayValue={awayStats?.pointsPerGame || 0} />
+        <StatBar label="Total Yards/Game" homeValue={homeStats?.totalYPG || 0} awayValue={awayStats?.totalYPG || 0} />
+        <StatBar label="Rush Yards/Game" homeValue={homeStats?.rushingYPG || 0} awayValue={awayStats?.rushingYPG || 0} />
+        <StatBar label="Pass Yards/Game" homeValue={homeStats?.passingYPG || 0} awayValue={awayStats?.passingYPG || 0} />
+      </div>
+
+      <div className="bg-gray-800 rounded-lg p-4 space-y-4">
+        <h4 className="text-sm text-gray-400 flex items-center gap-2">
+          <Shield className="w-4 h-4" /> Defensive Stats
+        </h4>
+        <StatBar label="Pts Allowed/Game" homeValue={homeStats?.pointsAllowedPerGame || 0} awayValue={awayStats?.pointsAllowedPerGame || 0} higherIsBetter={false} />
+        <StatBar label="Turnover Margin" homeValue={homeStats?.turnoverMargin || 0} awayValue={awayStats?.turnoverMargin || 0} />
+      </div>
+    </div>
+  );
+}
+
+// Players Tab - Key players
+function PlayersTab({ game, data }: { game: HSGame; data?: HSGamePreviewData | null }) {
+  const renderPlayerCard = (player: HSKeyPlayer, teamColor: string) => (
+    <div key={player.name} className="bg-gray-700/50 rounded-lg p-3">
+      <div className="flex items-center gap-2 mb-2">
+        {player.number && (
+          <span className="text-xs bg-gray-600 px-2 py-0.5 rounded font-mono">#{player.number}</span>
+        )}
+        <span className="font-semibold text-white">{player.name}</span>
+        <span className="text-xs text-gray-400">{player.position}</span>
+      </div>
+      <div className="flex flex-wrap gap-2 text-xs">
+        {Object.entries(player.stats).map(([key, value]) => (
+          <span key={key} className="bg-gray-600/50 px-2 py-1 rounded">
+            <span className="text-gray-400">{key}: </span>
+            <span className="text-white font-semibold">{value}</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Away Team Players */}
+      <div>
+        <h4 className="text-sm text-gray-400 mb-3 flex items-center gap-2">
+          <Star className="w-4 h-4" /> {game.awayAbbrev || game.awayTeam} Key Players
+        </h4>
+        <div className="space-y-2">
+          {data?.awayPlayers?.map(player => renderPlayerCard(player, game.awayColor || '#6366f1'))}
+          {(!data?.awayPlayers || data.awayPlayers.length === 0) && (
+            <p className="text-sm text-gray-500">No player data available</p>
+          )}
+        </div>
+      </div>
+
+      {/* Home Team Players */}
+      <div>
+        <h4 className="text-sm text-gray-400 mb-3 flex items-center gap-2">
+          <Star className="w-4 h-4" /> {game.homeAbbrev || game.homeTeam} Key Players
+        </h4>
+        <div className="space-y-2">
+          {data?.homePlayers?.map(player => renderPlayerCard(player, game.homeColor || '#f97316'))}
+          {(!data?.homePlayers || data.homePlayers.length === 0) && (
+            <p className="text-sm text-gray-500">No player data available</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Main Modal Component
 export default function GamePreviewModal({ 
   game, 
@@ -335,16 +537,17 @@ export default function GamePreviewModal({
         {isLive && game.situation && (
           <div className="border-t border-gray-700 p-4 bg-gray-800/50">
             <FootballField
-              possession={game.situation.possession || ''}
-              yardLine={game.situation.yardLine}
-              yardsToEndzone={game.situation.yardsToEndzone}
-              down={game.situation.down}
-              distance={game.situation.distance}
-              isRedZone={game.situation.isRedZone}
-              homeTeam={game.homeAbbrev || game.homeTeam}
-              awayTeam={game.awayAbbrev || game.awayTeam}
-              homeColor={game.homeColor}
-              awayColor={game.awayColor}
+              situation={{
+                possession: game.situation.possession || '',
+                yardLine: game.situation.yardLine,
+                yardsToEndzone: game.situation.yardsToEndzone,
+                down: game.situation.down,
+                distance: game.situation.distance,
+                isRedZone: game.situation.isRedZone,
+                downDistanceText: game.situation.downDistanceText,
+              }}
+              homeTeam={{ abbreviation: game.homeAbbrev || game.homeTeam, color: game.homeColor }}
+              awayTeam={{ abbreviation: game.awayAbbrev || game.awayTeam, color: game.awayColor }}
             />
           </div>
         )}
