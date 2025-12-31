@@ -8,10 +8,36 @@ const STATE = 'tx';
 // Cache for team logos (team name -> logo URL)
 const teamLogoCache: Map<string, string | null> = new Map();
 
+// Extract team ID from MaxPreps URL or data
+function extractTeamId(input: string | null): string | null {
+  if (!input) return null;
+  
+  // If it's a URL like "https://www.maxpreps.com/tx/arlington/martin-warriors/football/"
+  // Extract the GUID from the URL path
+  const urlMatch = input.match(/schools\/([0-9a-f-]{36})\//i);
+  if (urlMatch) return urlMatch[1];
+  
+  // If it's already a GUID
+  if (input.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+    return input;
+  }
+  
+  // If it's the @id field from JSON-LD, try to extract
+  const idMatch = input.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
+  if (idMatch) return idMatch[1];
+  
+  return null;
+}
+
 // Generate MaxPreps team logo URL from team ID (GUID format)
-// MaxPreps uses Azure Blob Storage for images
-function getTeamLogoUrl(teamId: string | null, teamName: string): string | null {
-  if (!teamId) return null;
+// MaxPreps uses multiple CDN patterns for images
+export function getTeamLogoUrl(teamIdInput: string | null, teamName: string): string | null {
+  const teamId = extractTeamId(teamIdInput);
+  
+  if (!teamId) {
+    // Try to get from team name via known mappings
+    return getLogoFromKnownTeams(teamName);
+  }
   
   // Check cache first
   const cacheKey = teamName.toLowerCase().replace(/\s+/g, '-');
@@ -19,16 +45,28 @@ function getTeamLogoUrl(teamId: string | null, teamName: string): string | null 
     return teamLogoCache.get(cacheKey) || null;
   }
   
-  // MaxPreps logos are typically at: https://d1nnhebuy1lh6n.cloudfront.net/images/teams/[teamId].png
-  // Or: https://images.maxpreps.com/site_images/logo/[teamId].png
-  // Try common patterns:
-  if (teamId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-    const logoUrl = `https://images.maxpreps.com/site_images/logo/${teamId}.png`;
-    teamLogoCache.set(cacheKey, logoUrl);
-    return logoUrl;
+  // MaxPreps CDN patterns (try multiple)
+  // Pattern 1: CloudFront CDN
+  const logoUrl = `https://d1nnhebuy1lh6n.cloudfront.net/images/teams/${teamId}.png`;
+  
+  // Alternative patterns that could be tried:
+  // Pattern 2: https://images.maxpreps.com/site_images/logo/${teamId}.png
+  // Pattern 3: https://images.maxpreps.com/school_sports/${teamId}/logo.png
+  
+  teamLogoCache.set(cacheKey, logoUrl);
+  return logoUrl;
+}
+
+// Known team logos for tracked teams
+function getLogoFromKnownTeams(teamName: string): string | null {
+  const lowerName = teamName.toLowerCase();
+  
+  // Martin Warriors (Arlington) - Clay's team!
+  if (lowerName.includes('martin') && (lowerName.includes('arlington') || lowerName.includes('warrior'))) {
+    return 'https://d1nnhebuy1lh6n.cloudfront.net/images/teams/8e8f9a16-44f0-4dd2-ad39-89c0c7d7e0f5.png';
   }
   
-  // Fallback: use a placeholder or school initial
+  // Add more known teams as needed
   return null;
 }
 
