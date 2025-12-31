@@ -17,6 +17,7 @@ function convertToLiveGame(mpGame: MaxPrepsGame): LiveGame {
     classification: mpGame.classification,
     district: '',
     record: '',
+    logo: mpGame.homeTeamLogo || undefined,
   };
 
   const awayTeam: Team = {
@@ -28,6 +29,7 @@ function convertToLiveGame(mpGame: MaxPrepsGame): LiveGame {
     classification: mpGame.classification,
     district: '',
     record: '',
+    logo: mpGame.awayTeamLogo || undefined,
   };
 
   // Map MaxPreps status to our status

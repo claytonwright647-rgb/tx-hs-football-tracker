@@ -9,8 +9,10 @@ export interface MaxPrepsGame {
   gameId: string;
   homeTeam: string;
   homeTeamId: string;
+  homeTeamLogo?: string | null;
   awayTeam: string;
   awayTeamId: string;
+  awayTeamLogo?: string | null;
   homeScore: number | null;
   awayScore: number | null;
   status: 'scheduled' | 'live' | 'final' | 'postponed';
@@ -146,8 +148,10 @@ export async function fetchScores(
       gameId: event['@id'] || `mp-${Date.now()}-${Math.random()}`,
       homeTeam: event.homeTeam?.name || '',
       homeTeamId: event.homeTeam?.['@id'] || '',
+      homeTeamLogo: event.homeTeam?.logo || event.homeTeam?.image?.url || null,
       awayTeam: event.awayTeam?.name || '',
       awayTeamId: event.awayTeam?.['@id'] || '',
+      awayTeamLogo: event.awayTeam?.logo || event.awayTeam?.image?.url || null,
       homeScore: event.homeTeam?.score ?? null,
       awayScore: event.awayTeam?.score ?? null,
       status: parseEventStatus(event.eventStatus),
@@ -282,8 +286,10 @@ export async function fetchPlayoffBracket(
       gameId: event['@id'] || `playoff-${Date.now()}-${Math.random()}`,
       homeTeam: event.homeTeam?.name || '',
       homeTeamId: event.homeTeam?.['@id'] || '',
+      homeTeamLogo: event.homeTeam?.logo || event.homeTeam?.image?.url || null,
       awayTeam: event.awayTeam?.name || '',
       awayTeamId: event.awayTeam?.['@id'] || '',
+      awayTeamLogo: event.awayTeam?.logo || event.awayTeam?.image?.url || null,
       homeScore: event.homeTeam?.score ?? null,
       awayScore: event.awayTeam?.score ?? null,
       status: parseEventStatus(event.eventStatus),

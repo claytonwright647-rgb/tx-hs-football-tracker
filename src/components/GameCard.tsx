@@ -85,9 +85,17 @@ export default function GameCard({ game, onClick }: GameCardProps) {
         {/* Away Team */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-lg">
-              🏈
-            </div>
+            {game.awayTeam.logo ? (
+              <img 
+                src={game.awayTeam.logo} 
+                alt={game.awayTeam.name}
+                className="w-10 h-10 rounded-full object-contain bg-gray-700"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-lg">
+                🏈
+              </div>
+            )}
             <div className="min-w-0 flex-1">
               <p className={`text-white truncate ${getTeamStyle(false)}`}>
                 {game.awayTeam.name}
@@ -107,9 +115,17 @@ export default function GameCard({ game, onClick }: GameCardProps) {
         {/* Home Team */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-lg">
-              🏈
-            </div>
+            {game.homeTeam.logo ? (
+              <img 
+                src={game.homeTeam.logo} 
+                alt={game.homeTeam.name}
+                className="w-10 h-10 rounded-full object-contain bg-gray-700"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-lg">
+                🏈
+              </div>
+            )}
             <div className="min-w-0 flex-1">
               <p className={`text-white truncate ${getTeamStyle(true)}`}>
                 {game.homeTeam.name}

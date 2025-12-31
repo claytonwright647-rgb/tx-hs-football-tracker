@@ -23,7 +23,7 @@ export interface Team {
   classification: string;
   division?: string;
   district: string;
-  region: number;
+  region?: number;
   record: string;
   districtRecord?: string;
   ranking?: number;
