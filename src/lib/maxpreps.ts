@@ -5,6 +5,33 @@ const MAXPREPS_BASE_URL = 'https://www.maxpreps.com';
 const MAXPREPS_API = 'https://api.maxpreps.com';
 const STATE = 'tx';
 
+// Cache for team logos (team name -> logo URL)
+const teamLogoCache: Map<string, string | null> = new Map();
+
+// Generate MaxPreps team logo URL from team ID (GUID format)
+// MaxPreps uses Azure Blob Storage for images
+function getTeamLogoUrl(teamId: string | null, teamName: string): string | null {
+  if (!teamId) return null;
+  
+  // Check cache first
+  const cacheKey = teamName.toLowerCase().replace(/\s+/g, '-');
+  if (teamLogoCache.has(cacheKey)) {
+    return teamLogoCache.get(cacheKey) || null;
+  }
+  
+  // MaxPreps logos are typically at: https://d1nnhebuy1lh6n.cloudfront.net/images/teams/[teamId].png
+  // Or: https://images.maxpreps.com/site_images/logo/[teamId].png
+  // Try common patterns:
+  if (teamId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+    const logoUrl = `https://images.maxpreps.com/site_images/logo/${teamId}.png`;
+    teamLogoCache.set(cacheKey, logoUrl);
+    return logoUrl;
+  }
+  
+  // Fallback: use a placeholder or school initial
+  return null;
+}
+
 export interface MaxPrepsGame {
   gameId: string;
   homeTeam: string;
@@ -144,24 +171,31 @@ export async function fetchScores(
     // Extract SportsEvent JSON-LD data
     const events = extractJsonLd(html, 'SportsEvent');
     
-    return events.flat().map((event: any) => ({
-      gameId: event['@id'] || `mp-${Date.now()}-${Math.random()}`,
-      homeTeam: event.homeTeam?.name || '',
-      homeTeamId: event.homeTeam?.['@id'] || '',
-      homeTeamLogo: event.homeTeam?.logo || event.homeTeam?.image?.url || null,
-      awayTeam: event.awayTeam?.name || '',
-      awayTeamId: event.awayTeam?.['@id'] || '',
-      awayTeamLogo: event.awayTeam?.logo || event.awayTeam?.image?.url || null,
-      homeScore: event.homeTeam?.score ?? null,
-      awayScore: event.awayTeam?.score ?? null,
-      status: parseEventStatus(event.eventStatus),
-      startTime: event.startDate || '',
-      venue: event.location?.name || '',
-      city: event.location?.address?.addressLocality || '',
-      classification,
-      week: week || 0,
-      isPlayoff: false,
-    }));
+    return events.flat().map((event: any) => {
+      const homeTeamId = event.homeTeam?.['@id'] || '';
+      const homeTeamName = event.homeTeam?.name || '';
+      const awayTeamId = event.awayTeam?.['@id'] || '';
+      const awayTeamName = event.awayTeam?.name || '';
+      
+      return {
+        gameId: event['@id'] || `mp-${Date.now()}-${Math.random()}`,
+        homeTeam: homeTeamName,
+        homeTeamId,
+        homeTeamLogo: event.homeTeam?.logo || event.homeTeam?.image?.url || getTeamLogoUrl(homeTeamId, homeTeamName),
+        awayTeam: awayTeamName,
+        awayTeamId,
+        awayTeamLogo: event.awayTeam?.logo || event.awayTeam?.image?.url || getTeamLogoUrl(awayTeamId, awayTeamName),
+        homeScore: event.homeTeam?.score ?? null,
+        awayScore: event.awayTeam?.score ?? null,
+        status: parseEventStatus(event.eventStatus),
+        startTime: event.startDate || '',
+        venue: event.location?.name || '',
+        city: event.location?.address?.addressLocality || '',
+        classification,
+        week: week || 0,
+        isPlayoff: false,
+      };
+    });
   } catch (error) {
     console.error('MaxPreps fetch error:', error);
     return [];
@@ -282,25 +316,32 @@ export async function fetchPlayoffBracket(
     const html = await response.text();
     const events = extractJsonLd(html, 'SportsEvent');
     
-    return events.flat().map((event: any) => ({
-      gameId: event['@id'] || `playoff-${Date.now()}-${Math.random()}`,
-      homeTeam: event.homeTeam?.name || '',
-      homeTeamId: event.homeTeam?.['@id'] || '',
-      homeTeamLogo: event.homeTeam?.logo || event.homeTeam?.image?.url || null,
-      awayTeam: event.awayTeam?.name || '',
-      awayTeamId: event.awayTeam?.['@id'] || '',
-      awayTeamLogo: event.awayTeam?.logo || event.awayTeam?.image?.url || null,
-      homeScore: event.homeTeam?.score ?? null,
-      awayScore: event.awayTeam?.score ?? null,
-      status: parseEventStatus(event.eventStatus),
-      startTime: event.startDate || '',
-      venue: event.location?.name || '',
-      city: event.location?.address?.addressLocality || '',
-      classification,
-      week: 0,
-      isPlayoff: true,
-      playoffRound: parsePlayoffRound(event.name || ''),
-    }));
+    return events.flat().map((event: any) => {
+      const homeTeamId = event.homeTeam?.['@id'] || '';
+      const homeTeamName = event.homeTeam?.name || '';
+      const awayTeamId = event.awayTeam?.['@id'] || '';
+      const awayTeamName = event.awayTeam?.name || '';
+      
+      return {
+        gameId: event['@id'] || `playoff-${Date.now()}-${Math.random()}`,
+        homeTeam: homeTeamName,
+        homeTeamId,
+        homeTeamLogo: event.homeTeam?.logo || event.homeTeam?.image?.url || getTeamLogoUrl(homeTeamId, homeTeamName),
+        awayTeam: awayTeamName,
+        awayTeamId,
+        awayTeamLogo: event.awayTeam?.logo || event.awayTeam?.image?.url || getTeamLogoUrl(awayTeamId, awayTeamName),
+        homeScore: event.homeTeam?.score ?? null,
+        awayScore: event.awayTeam?.score ?? null,
+        status: parseEventStatus(event.eventStatus),
+        startTime: event.startDate || '',
+        venue: event.location?.name || '',
+        city: event.location?.address?.addressLocality || '',
+        classification,
+        week: 0,
+        isPlayoff: true,
+        playoffRound: parsePlayoffRound(event.name || ''),
+      };
+    });
   } catch (error) {
     console.error('MaxPreps playoffs error:', error);
     return [];
