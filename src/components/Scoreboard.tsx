@@ -1,188 +1,71 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { CLASSIFICATIONS } from '@/lib/constants';
 import { Game, Classification, LiveGame } from '@/lib/types';
 import ClassificationCard from './ClassificationCard';
 import GameCard from './GameCard';
 import GameDetailModal from './GameDetailModal';
 
-// Mock data for demonstration - includes live game with situation data
-const mockGames: (Game | LiveGame)[] = [
-  // Live game example with field situation
-  {
-    id: 'live-1',
-    homeTeam: {
-      id: 'stephenville',
-      name: 'Stephenville',
-      mascot: 'Yellow Jackets',
-      city: 'Stephenville',
-      school: 'Stephenville High School',
-      classification: '4A',
-      district: '5-4A',
-      region: 1,
-      record: '15-0',
-      colors: { primary: '#FFD700', secondary: '#000000' },
-    },
-    awayTeam: {
-      id: 'kilgore',
-      name: 'Kilgore',
-      mascot: 'Bulldogs',
-      city: 'Kilgore',
-      school: 'Kilgore High School',
-      classification: '4A',
-      district: '9-4A',
-      region: 2,
-      record: '14-1',
-      colors: { primary: '#8B0000', secondary: '#FFFFFF' },
-    },
-    homeScore: 21,
-    awayScore: 14,
-    status: 'in_progress',
-    quarter: 3,
-    timeRemaining: '6:42',
-    classification: '4A',
-    division: 'I',
-    isPlayoff: true,
-    playoffRound: 'State Championship',
-    venue: 'AT&T Stadium',
-    city: 'Arlington',
-    date: '2025-12-19',
-    time: '11:00 AM',
-    isDistrictGame: false,
-    // Live situation data - shows on football field
-    situation: {
-      possession: 'STV',
-      down: 2,
-      distance: 7,
-      yardLine: 35,
-      lastPlay: 'J. Smith rush for 3 yards',
-    },
-  } as LiveGame,
-  {
-    id: '1',
-    homeTeam: {
-      id: 'duncanville',
-      name: 'Duncanville',
-      mascot: 'Panthers',
-      city: 'Duncanville',
-      school: 'Duncanville High School',
-      classification: '6A',
-      district: '11-6A',
-      region: 2,
-      record: '14-1',
-    },
-    awayTeam: {
-      id: 'north-shore',
-      name: 'North Shore',
-      mascot: 'Mustangs',
-      city: 'Houston',
-      school: 'North Shore Senior High School',
-      classification: '6A',
-      district: '21-6A',
-      region: 3,
-      record: '15-0',
-    },
-    homeScore: 7,
-    awayScore: 10,
-    status: 'final',
-    classification: '6A',
-    division: 'I',
-    isPlayoff: true,
-    playoffRound: 'State Championship',
-    venue: 'AT&T Stadium',
-    city: 'Arlington',
-    date: '12/21/24',
-    time: '3:00 PM',
-    isDistrictGame: false,
-  },
-  {
-    id: '2',
-    homeTeam: {
-      id: 'desoto',
-      name: 'DeSoto',
-      mascot: 'Eagles',
-      city: 'DeSoto',
-      school: 'DeSoto High School',
-      classification: '6A',
-      district: '11-6A',
-      region: 2,
-      record: '15-0',
-    },
-    awayTeam: {
-      id: 'ce-king',
-      name: 'C.E. King',
-      mascot: 'Panthers',
-      city: 'Houston',
-      school: 'C.E. King High School',
-      classification: '6A',
-      district: '21-6A',
-      region: 3,
-      record: '13-2',
-    },
-    homeScore: 55,
-    awayScore: 27,
-    status: 'final',
-    classification: '6A',
-    division: 'II',
-    isPlayoff: true,
-    playoffRound: 'State Championship',
-    venue: 'AT&T Stadium',
-    city: 'Arlington',
-    date: '12/21/24',
-    time: '7:00 PM',
-    isDistrictGame: false,
-  },
-  {
-    id: '3',
-    homeTeam: {
-      id: 'aledo',
-      name: 'Aledo',
-      mascot: 'Bearcats',
-      city: 'Aledo',
-      school: 'Aledo High School',
-      classification: '5A',
-      district: '3-5A',
-      region: 1,
-      record: '13-1',
-    },
-    awayTeam: {
-      id: 'south-oak-cliff',
-      name: 'South Oak Cliff',
-      mascot: 'Golden Bears',
-      city: 'Dallas',
-      school: 'South Oak Cliff High School',
-      classification: '5A',
-      district: '6-5A',
-      region: 2,
-      record: '14-0',
-    },
-    homeScore: 21,
-    awayScore: 28,
-    status: 'in_progress',
-    quarter: 3,
-    timeRemaining: '8:42',
-    classification: '5A',
-    division: 'II',
-    isPlayoff: true,
-    playoffRound: 'State Semifinal',
-    venue: 'Globe Life Field',
-    city: 'Arlington',
-    date: '12/21/24',
-    time: '2:00 PM',
-    isDistrictGame: false,
-  },
-];
-
 interface ScoreboardProps {
   selectedClassification?: string;
 }
 
 export default function Scoreboard({ selectedClassification }: ScoreboardProps) {
-  const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [games, setGames] = useState<(Game | LiveGame)[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<string>(selectedClassification || 'all');
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
   const [selectedGame, setSelectedGame] = useState<Game | LiveGame | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+  // Fetch games from API
+  const fetchGames = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch('/api/games', { cache: 'no-store' });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch games: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.success && data.games) {
+        setGames(data.games);
+        setLastUpdated(new Date(data.timestamp));
+      } else {
+        setGames([]);
+      }
+    } catch (err) {
+      console.error('Error fetching games:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load games');
+      setGames([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchGames();
+  }, [fetchGames]);
+
+  // Auto-refresh for live games (every 30 seconds)
+  useEffect(() => {
+    const hasLiveGames = games.some(g => 
+      g.status === 'in_progress' || g.status === 'halftime'
+    );
+    
+    if (hasLiveGames) {
+      const interval = setInterval(fetchGames, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [games, fetchGames]);
 
   const handleGameClick = (game: Game | LiveGame) => {
     setSelectedGame(game);
@@ -196,19 +79,41 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
 
   // Filter games based on classification
   const filteredGames = activeFilter === 'all' 
-    ? mockGames 
-    : mockGames.filter(g => g.classification === activeFilter);
+    ? games 
+    : games.filter(g => g.classification === activeFilter);
 
   // Count live games per classification
   const getLiveCount = (classId: string) => 
-    mockGames.filter(g => g.classification === classId && 
+    games.filter(g => g.classification === classId && 
       (g.status === 'in_progress' || g.status === 'halftime')).length;
 
   const getGamesCount = (classId: string) =>
-    mockGames.filter(g => g.classification === classId).length;
+    games.filter(g => g.classification === classId).length;
+
+  // Total live games count
+  const totalLiveGames = games.filter(g => 
+    g.status === 'in_progress' || g.status === 'halftime'
+  ).length;
 
   return (
     <div className="space-y-6">
+      {/* Live Games Banner */}
+      {totalLiveGames > 0 && (
+        <div className="bg-gradient-to-r from-red-600 to-orange-500 rounded-lg p-3 flex items-center justify-between animate-pulse">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🔴</span>
+            <span className="text-white font-bold text-lg">
+              {totalLiveGames} Live Game{totalLiveGames !== 1 ? 's' : ''} Now!
+            </span>
+          </div>
+          <button 
+            onClick={fetchGames}
+            className="bg-white/20 hover:bg-white/30 px-4 py-1 rounded text-white text-sm transition-colors"
+          >
+            Refresh
+          </button>
+        </div>
+      )}
       {/* Classification Cards Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {CLASSIFICATIONS.map((classification) => (
@@ -244,9 +149,21 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
               (Clear)
             </button>
           )}
+          {lastUpdated && (
+            <span className="text-gray-500 text-xs ml-4">
+              Updated: {lastUpdated.toLocaleTimeString()}
+            </span>
+          )}
         </div>
         
         <div className="flex items-center gap-2">
+          <button
+            onClick={fetchGames}
+            disabled={loading}
+            className="px-3 py-1 rounded bg-gray-700 text-gray-300 hover:bg-gray-600 disabled:opacity-50"
+          >
+            {loading ? '⏳' : '🔄'}
+          </button>
           <button
             onClick={() => setViewMode('cards')}
             className={`px-3 py-1 rounded ${viewMode === 'cards' ? 'bg-orange-600 text-white' : 'bg-gray-700 text-gray-400'}`}
