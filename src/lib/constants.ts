@@ -1,6 +1,27 @@
 // Texas High School Football Constants
 
-import { Classification } from './types';
+import { Classification, Team } from './types';
+
+// My Followed Teams - Track these teams specifically
+export const FOLLOWED_TEAMS: Team[] = [
+  {
+    id: 'martin-arlington',
+    name: 'Martin',
+    mascot: 'Warriors',
+    city: 'Arlington',
+    school: 'James Martin High School',
+    classification: '6A',
+    division: 'Division II',
+    district: '8-6A',
+    region: 1,
+    record: '4-6',
+    districtRecord: '3-4',
+    colors: {
+      primary: '#CC0000',     // Red
+      secondary: '#000000',   // Black
+    },
+  },
+];
 
 export const CLASSIFICATIONS: Classification[] = [
   {

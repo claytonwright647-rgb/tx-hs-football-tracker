@@ -1,5 +1,26 @@
 # Changelog - Texas HS Football Tracker
 
+## [0.6.1] - 2026-01-02 - Followed Teams Feature 🎯
+
+### Added
+- **FOLLOWED_TEAMS Configuration**
+  - New `FOLLOWED_TEAMS` array in constants.ts
+  - Track specific teams for priority display
+  - First followed team: **James Martin High School Warriors** (Arlington)
+  
+- **Martin Warriors Info:**
+  - Classification: 6A, Division II
+  - District: 8-6A (Region 1)
+  - City: Arlington, TX
+  - Colors: Red (#CC0000), Black (#000000)
+  - 2025-26 Record: 4-6 (3-4 district)
+
+### Technical
+- Updated types.ts import in constants.ts to include Team type
+- FOLLOWED_TEAMS ready for UI integration in future updates
+
+---
+
 ## [0.6.0] - 2025-12-26 - GamePreviewModal 📊
 
 ### Added
