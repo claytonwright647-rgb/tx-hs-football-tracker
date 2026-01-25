@@ -180,11 +180,16 @@ export default function GameCard({ game, onClick }: GameCardProps) {
             📍 {game.venue}
           </span>
         </div>
-        {game.broadcast && (
-          <div className="mt-1 text-xs text-gray-500">
-            📺 {game.broadcast}
-          </div>
-        )}
+        <div className="mt-1 flex items-center justify-between text-xs">
+          {game.broadcast && (
+            <span className="text-gray-500">
+              📺 {game.broadcast}
+            </span>
+          )}
+          <span className="text-purple-400 ml-auto" title="Brain AI Analysis">
+            🧠 AI
+          </span>
+        </div>
       </div>
     </div>
   );
