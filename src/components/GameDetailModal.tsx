@@ -2,6 +2,7 @@
 
 import { X } from 'lucide-react';
 import { FootballField } from './fields';
+import GameHighlights from './GameHighlights';
 
 interface GameDetailModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ interface GameDetailModalProps {
     date?: string;
     time?: string;
     classification?: string;
+    id?: string;
     // Live game situation (when available)
     situation?: {
       down?: number;
@@ -126,6 +128,19 @@ export default function GameDetailModal({ isOpen, onClose, game }: GameDetailMod
             }}
           />
         </div>
+
+        {/* Game Highlights Section - Only show for completed games */}
+        {isFinal && game.id && (
+          <div className="p-4 border-t border-gray-700">
+            <GameHighlights
+              gameId={game.id}
+              homeTeam={game.homeTeam}
+              awayTeam={game.awayTeam}
+              status={game.status || 'final'}
+              date={game.date}
+            />
+          </div>
+        )}
 
         {/* Info Footer */}
         <div className="p-4 border-t border-gray-700 bg-gray-800/50">
