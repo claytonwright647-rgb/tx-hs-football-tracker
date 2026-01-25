@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Header from '@/components/Header';
+import ELOStandingsColumn from '@/components/ELOStandingsColumn';
 import { CLASSIFICATIONS } from '@/lib/constants';
 
 // Mock standings data - Final 2025-2026 standings
@@ -169,6 +170,7 @@ export default function StandingsPage() {
                     <tr className="text-gray-400 text-sm border-b border-gray-700">
                       <th className="px-4 py-3 text-left">#</th>
                       <th className="px-4 py-3 text-left">Team</th>
+                      <th className="px-4 py-3 text-center">ELO Strength</th>
                       <th className="px-4 py-3 text-center">Overall</th>
                       <th className="px-4 py-3 text-center">District</th>
                       <th className="px-4 py-3 text-center">PF</th>
@@ -188,6 +190,12 @@ export default function StandingsPage() {
                         </td>
                         <td className="px-4 py-3">
                           <span className="text-white font-semibold">{team.team}</span>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <ELOStandingsColumn 
+                            teamId={team.team.toLowerCase().replace(/\s+/g, '-')} 
+                            teamName={team.team}
+                          />
                         </td>
                         <td className="px-4 py-3 text-center text-white">{team.record}</td>
                         <td className="px-4 py-3 text-center text-gray-300">{team.districtRecord}</td>

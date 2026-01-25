@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import GameCard from '@/components/GameCard';
 import GameDetailModal from '@/components/GameDetailModal';
 import SeasonIntelligence from '@/components/SeasonIntelligence';
+import AIGameInsights from '@/components/AIGameInsights';
 import { CLASSIFICATIONS } from '@/lib/constants';
 import { Game, LiveGame } from '@/lib/types';
 
@@ -256,6 +257,22 @@ export default function ScoreboardPage() {
         </div>
 
         {/* Game Detail Modal */}
+        {selectedGame && (
+          <div className="mt-8 p-6 rounded-xl bg-gray-800/50 border border-gray-700">
+            <h2 className="text-2xl font-bold text-white mb-4">
+              {selectedGame.homeTeam.name} vs {selectedGame.awayTeam.name}
+            </h2>
+            <AIGameInsights
+              gameId={selectedGame.id}
+              homeTeamId={selectedGame.homeTeam.id}
+              awayTeamId={selectedGame.awayTeam.id}
+              homeTeamName={selectedGame.homeTeam.name}
+              awayTeamName={selectedGame.awayTeam.name}
+              gameStatus={selectedGame.status === 'in_progress' ? 'in_progress' : selectedGame.status === 'final' ? 'final' : 'scheduled'}
+            />
+          </div>
+        )}
+
         <GameDetailModal
           isOpen={isModalOpen}
           onClose={handleCloseModal}
