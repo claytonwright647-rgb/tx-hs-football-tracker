@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { SEASON_INFO, NEXT_SEASON } from '@/lib/constants';
 import SearchBar from './SearchBar';
 import SeasonCountdown from './SeasonCountdown';
+import { AIStatusButton } from './AIStatusButton';
 
 const navItems = [
   { name: 'Home', href: '/' },
@@ -92,11 +93,7 @@ export default function Header() {
               <div className="text-gray-400 text-xs">{currentDate}</div>
               <div className="text-white font-mono text-sm">{currentTime}</div>
             </div>
-            <div className="flex items-center gap-2 px-3 py-2 bg-purple-900/40 border border-purple-500/50 text-purple-300 rounded-lg font-medium">
-              <span className="text-lg">🧠</span>
-              <span className="text-sm">Brain AI</span>
-              <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
-            </div>
+            <AIStatusButton />
             <button
               onClick={() => window.location.reload()}
               className="flex items-center gap-1 px-3 py-2 bg-orange-600 hover:bg-orange-500 rounded-lg transition-colors text-white font-semibold text-sm"
