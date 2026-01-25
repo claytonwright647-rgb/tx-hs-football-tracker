@@ -1,16 +1,22 @@
 /**
  * Brain AI Standings Route for HS Football Tracker
- * GET /api/brain-ai/standings/hs-football
+ * Handles GET /api/brain-ai/standings/[leagueId]
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(req: NextRequest) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ leagueId?: string }> }
+) {
   try {
+    const resolvedParams = await params;
+    const leagueId = resolvedParams.leagueId || 'hs-football';
+
     // Return mock standings data for HS Football teams
     return NextResponse.json({
       success: true,
-      leagueId: 'hs-football',
+      leagueId,
       timestamp: new Date().toISOString(),
       data: {
         teams: [
@@ -63,10 +69,11 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('GET /api/brain-ai/standings/hs-football error:', error);
+    console.error('GET /api/brain-ai/standings error:', error);
     return NextResponse.json(
       { success: false, error: String(error) },
       { status: 500 }
     );
   }
 }
+
