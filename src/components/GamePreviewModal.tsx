@@ -393,6 +393,44 @@ export default function GamePreviewModal({
   isLoading = false 
 }: GamePreviewModalProps) {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [brainAIPrediction, setBrainAIPrediction] = useState<{ homeWinProb: number; awayWinProb: number } | null>(null);
+  const [brainAILoading, setBrainAILoading] = useState(false);
+
+  // Fetch Brain AI predictions when modal opens
+  useEffect(() => {
+    if (!isOpen || !game || brainAIPrediction) return;
+
+    const fetchBrainAIPredictions = async () => {
+      setBrainAILoading(true);
+      try {
+        // Calculate ELO from record
+        const homeWins = game.homeRecord ? parseInt(game.homeRecord.split('-')[0]) : 0;
+        const awayWins = game.awayRecord ? parseInt(game.awayRecord.split('-')[0]) : 0;
+        const homeELO = 1500 + (homeWins * 15);
+        const awayELO = 1500 + (awayWins * 15);
+
+        const res = await fetch(
+          `/api/brain-ai/predictions?homeELO=${homeELO}&awayELO=${awayELO}&leagueId=hs-football`
+        );
+        
+        if (res.ok) {
+          const predData = await res.json();
+          if (predData.success && predData.data) {
+            setBrainAIPrediction({
+              homeWinProb: Math.round(predData.data.homeWinProbability * 100),
+              awayWinProb: Math.round(predData.data.awayWinProbability * 100),
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch Brain AI predictions:', err);
+      } finally {
+        setBrainAILoading(false);
+      }
+    };
+
+    fetchBrainAIPredictions();
+  }, [isOpen, game, brainAIPrediction]);
 
   useEffect(() => {
     if (isOpen) {
@@ -486,6 +524,16 @@ export default function GamePreviewModal({
                   </span>
                 )}
               </div>
+
+              {/* Brain AI Prediction Badge */}
+              {brainAIPrediction && !isLive && !isFinal && (
+                <div className="mt-3 bg-purple-900/40 border border-purple-500/50 rounded-lg px-3 py-2 text-center">
+                  <div className="flex items-center justify-center gap-2 text-purple-300 text-xs">
+                    <span>🧠</span>
+                    <span>Brain AI: {brainAIPrediction.homeWinProb}% vs {brainAIPrediction.awayWinProb}%</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <button onClick={onClose} className="p-2 hover:bg-gray-800 rounded-full transition-colors">
