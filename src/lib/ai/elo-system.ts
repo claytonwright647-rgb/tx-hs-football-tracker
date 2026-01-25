@@ -5,7 +5,7 @@
 
 import { Team } from '../types';
 
-interface HSTeamRating {
+export interface HSTeamRating {
   team: Team;
   elo: number;
   wins: number;

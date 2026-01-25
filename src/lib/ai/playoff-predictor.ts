@@ -6,7 +6,7 @@
 import { Team, PlayoffBracket } from '../types';
 import eloSystem from './elo-system';
 
-interface PlayoffPrediction {
+export interface PlayoffPrediction {
   tournament: string;
   predictedWinner: Team;
   predictions: {
@@ -40,6 +40,7 @@ class HSPlayoffPredictor {
           mascot: '',
           district: '',
           classification: '',
+          record: '0-0',
         },
         predictions: [],
         keyMatchups: [],
@@ -96,7 +97,18 @@ class HSPlayoffPredictor {
 
     return {
       tournament: bracket.classification || 'Unknown Tournament',
-      predictedWinner: predictions.length > 0 ? { ...allTeams.find(t => t.id === (predictions[0]?.teamId || '')) } || allTeams[0] : allTeams[0],
+      predictedWinner: predictions.length > 0 && allTeams.length > 0 
+        ? allTeams.find(t => t.id === (predictions[0]?.teamId || '')) || allTeams[0]
+        : allTeams.length > 0 ? allTeams[0] : {
+            id: '',
+            name: 'Unknown',
+            school: '',
+            city: '',
+            mascot: '',
+            district: '',
+            classification: '',
+            record: '0-0',
+          },
       predictions,
       keyMatchups,
     };

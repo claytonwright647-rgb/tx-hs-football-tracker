@@ -6,7 +6,7 @@
 import { Game, LiveGame } from '../types';
 import eloSystem from './elo-system';
 
-interface GameAnalysis {
+export interface GameAnalysis {
   momentum: number; // -100 to +100, home team perspective
   gameControl: string; // 'home' | 'away' | 'balanced'
   keyMoments: string[];
@@ -22,7 +22,7 @@ interface GameAnalysis {
   }[];
 }
 
-interface HistoricalMatchup {
+export interface HistoricalMatchup {
   homeTeamId: string;
   awayTeamId: string;
   homeWins: number;
