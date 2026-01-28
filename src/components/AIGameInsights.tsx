@@ -45,43 +45,122 @@ export function AIGameInsights({
     const fetchInsights = async () => {
       try {
         setIsLoading(true);
+        setError(null);
+        
+        const payload = {
+          id: gameId,
+          homeTeam: { id: homeTeamId, name: homeTeamName },
+          awayTeam: { id: awayTeamId, name: awayTeamName },
+          status: gameStatus,
+          homeScore: 0,
+          awayScore: 0,
+        };
+
         const response = await fetch('/api/ai-enhancements', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'analyze-game',
-            payload: {
-              id: gameId,
-              homeTeam: { id: homeTeamId, name: homeTeamName },
-              awayTeam: { id: awayTeamId, name: awayTeamName },
-              status: gameStatus,
-            },
+            payload,
           }),
         });
 
-        if (!response.ok) throw new Error('Failed to fetch insights');
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('API response error:', response.status, errorText);
+          throw new Error(`API returned ${response.status}`);
+        }
 
         const data = await response.json();
+        
         if (data.success && data.data) {
-          const analysisInsights: GameInsight[] = [
-            ...data.data.insights.map((text: string) => ({
-              title: 'Game Analysis',
-              description: text,
-              type: 'prediction' as const,
+          const analysisData = data.data;
+          const analysisInsights: GameInsight[] = [];
+
+          // Add momentum insight
+          if (analysisData.momentum !== undefined) {
+            const momentumText = analysisData.momentum > 0 
+              ? `${homeTeamName} has momentum (${Math.round(analysisData.momentum)}%)`
+              : analysisData.momentum < 0
+              ? `${awayTeamName} has momentum (${Math.round(Math.abs(analysisData.momentum))}%)`
+              : 'Game is evenly matched';
+            
+            analysisInsights.push({
+              title: 'Momentum',
+              description: momentumText,
+              type: 'momentum',
+              confidence: 80,
+            });
+          }
+
+          // Add prediction insights
+          if (analysisData.predictions) {
+            const homePred = (analysisData.predictions.homeWinProbability || 0) * 100;
+            analysisInsights.push({
+              title: 'Win Prediction',
+              description: `${homeTeamName}: ${Math.round(homePred)}% | ${awayTeamName}: ${Math.round(100 - homePred)}%`,
+              type: 'prediction',
               confidence: 75,
-            })),
-          ];
-          setInsights(analysisInsights);
+            });
+          }
+
+          // Add game control insight
+          if (analysisData.gameControl) {
+            const controlText = analysisData.gameControl === 'home' 
+              ? `${homeTeamName} controlling the game`
+              : analysisData.gameControl === 'away'
+              ? `${awayTeamName} controlling the game`
+              : 'Game control is evenly split';
+            
+            analysisInsights.push({
+              title: 'Game Control',
+              description: controlText,
+              type: 'momentum',
+              confidence: 70,
+            });
+          }
+
+          // Add key moments
+          if (analysisData.keyMoments && Array.isArray(analysisData.keyMoments)) {
+            analysisData.keyMoments.forEach((moment: string) => {
+              analysisInsights.push({
+                title: 'Key Moment',
+                description: moment,
+                type: 'trend',
+                confidence: 65,
+              });
+            });
+          }
+
+          // Add other insights
+          if (analysisData.insights && Array.isArray(analysisData.insights)) {
+            analysisData.insights.forEach((text: string) => {
+              analysisInsights.push({
+                title: 'Analysis',
+                description: text,
+                type: 'prediction',
+                confidence: 75,
+              });
+            });
+          }
+
+          setInsights(analysisInsights.slice(0, 5)); // Limit to 5 insights
+        } else {
+          setError(data.error || 'Failed to load insights');
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error loading insights');
+        const message = err instanceof Error ? err.message : 'Error loading insights';
+        console.error('AIGameInsights error:', message);
+        setError(message);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchInsights();
-  }, [gameId, gameStatus]);
+    if (gameId && homeTeamId && awayTeamId) {
+      fetchInsights();
+    }
+  }, [gameId, gameStatus, homeTeamId, awayTeamId, homeTeamName, awayTeamName]);
 
   if (isLoading) {
     return (

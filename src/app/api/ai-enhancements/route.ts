@@ -11,13 +11,32 @@ import playoffPredictor from '@/lib/ai/playoff-predictor';
 
 export async function POST(request: NextRequest) {
   try {
-    const { action, payload } = await request.json();
+    const body = await request.json();
+    const { action, payload } = body;
+
+    if (!action) {
+      return NextResponse.json({ success: false, error: 'Missing action parameter' }, { status: 400 });
+    }
 
     switch (action) {
       case 'analyze-game': {
-        const game = payload as LiveGame | Game;
-        const analysis = gameAnalyzer.analyzeGame(game);
-        return NextResponse.json({ success: true, data: analysis });
+        try {
+          const game = payload as LiveGame | Game;
+          if (!game || !game.homeTeam || !game.awayTeam) {
+            return NextResponse.json({ 
+              success: false, 
+              error: 'Invalid game data: missing homeTeam or awayTeam' 
+            }, { status: 400 });
+          }
+          const analysis = gameAnalyzer.analyzeGame(game);
+          return NextResponse.json({ success: true, data: analysis });
+        } catch (gameErr) {
+          console.error('Game analysis error:', gameErr);
+          return NextResponse.json({ 
+            success: false, 
+            error: `Game analysis failed: ${String(gameErr)}` 
+          }, { status: 500 });
+        }
       }
 
       case 'get-team-rating': {
