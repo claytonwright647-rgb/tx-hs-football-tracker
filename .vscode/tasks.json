@@ -1,0 +1,21 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build Next.js app after revert",
+			"type": "shell",
+			"command": "npx next build",
+			"group": "build"
+		},
+		{
+			"label": "Build and deploy tracker system with confidence badges",
+			"type": "shell",
+			"command": "npm run build && npm run deploy",
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		}
+	]
+}

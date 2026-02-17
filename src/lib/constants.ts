@@ -104,43 +104,30 @@ export const CLASSIFICATIONS: Classification[] = [
   },
 ];
 
-// Season Information - 2025-2026 Season (COMPLETED Dec 20, 2025)
+// Season Information - 2026-2027 Season (UPCOMING)
 export const SEASON_INFO = {
-  year: '2025-2026',
-  displayYear: '2025-26',
-  status: 'completed', // 'offseason' | 'preseason' | 'regular' | 'playoffs' | 'completed'
-  regularSeasonStart: '2025-08-28',
-  regularSeasonEnd: '2025-11-08',
-  playoffsStart: '2025-11-13',
-  stateChampionships: '2025-12-17',
-  stateChampionshipsEnd: '2025-12-20',
+  year: '2026-2027',
+  displayYear: '2026-27',
+  status: 'offseason', // 'offseason' | 'preseason' | 'regular' | 'playoffs' | 'completed'
+  regularSeasonStart: '2026-08-27',
+  regularSeasonEnd: '2026-11-07',
+  playoffsStart: '2026-11-12',
+  stateChampionships: '2026-12-16',
+  stateChampionshipsEnd: '2026-12-19',
   championshipVenue: 'AT&T Stadium, Arlington',
 };
 
-// NEXT Season - 2026-2027
+// NEXT Season - Placeholder
 export const NEXT_SEASON = {
-  year: '2026-2027',
-  displayYear: '2026-27',
-  kickoffDate: '2026-08-27', // Thursday before Labor Day weekend
-  fallCampStart: '2026-08-03', // Usually first Monday in August
+  year: '2027-2028',
+  displayYear: '2027-28',
+  kickoffDate: '2027-08-26',
+  fallCampStart: '2027-08-02',
 };
 
 
-// 2025-2026 State Champions (Season just completed Dec 20, 2025!)
-export const CURRENT_CHAMPIONS = [
-  { classification: '6A', division: 'I', champion: 'North Shore', runnerUp: 'Duncanville', score: '10-7', titles: 6, note: 'First since 2021', date: '2025-12-20' },
-  { classification: '6A', division: 'II', champion: 'DeSoto', runnerUp: 'C.E. King', score: '55-27', titles: 2, note: '2nd state title', date: '2025-12-20' },
-  { classification: '5A', division: 'I', champion: 'Smithson Valley', runnerUp: 'Frisco Lone Star', score: '28-6', titles: 2, note: 'Back-to-back', date: '2025-12-19' },
-  { classification: '5A', division: 'II', champion: 'South Oak Cliff', runnerUp: 'Richmond Randle', score: '35-19', titles: 3, note: '5th straight title game', date: '2025-12-20' },
-  { classification: '4A', division: 'I', champion: 'Stephenville', runnerUp: 'Kilgore', score: '35-21', titles: 7, note: '7th state title', date: '2025-12-19' },
-  { classification: '4A', division: 'II', champion: 'Carthage', runnerUp: 'West Orange-Stark', score: '42-14', titles: 11, note: 'Perfect in title games', date: '2025-12-19' },
-  { classification: '3A', division: 'I', champion: 'Yoakum', runnerUp: 'Grandview', score: '24-21', titles: 1, note: 'First title!', date: '2025-12-18' },
-  { classification: '3A', division: 'II', champion: 'Wall', runnerUp: 'Newton', score: '28-21', titles: 1, note: 'First title!', date: '2025-12-18' },
-  { classification: '2A', division: 'I', champion: 'Hamilton', runnerUp: 'Joaquin', score: '42-28', titles: 1, note: 'First title!', date: '2025-12-17' },
-  { classification: '2A', division: 'II', champion: 'Muenster', runnerUp: 'Shiner', score: '35-28', titles: 2, note: 'Back-to-back', date: '2025-12-18' },
-  { classification: '1A', division: 'I', champion: 'Gordon', runnerUp: 'Rankin', score: '69-22', titles: 3, note: 'THREE-PEAT! 🏆🏆🏆', date: '2025-12-17' },
-  { classification: '1A', division: 'II', champion: 'Jayton', runnerUp: 'Richland Springs', score: '94-52', titles: 1, note: 'First title!', date: '2025-12-17' },
-];
+// 2025-2026 State Champions (Allocated for History)
+export const CURRENT_CHAMPIONS: any[] = [];
 
 // Playoff Rounds
 export const PLAYOFF_ROUNDS = [
@@ -162,29 +149,30 @@ export const REGIONS = [
 ];
 
 
-// Notable Powerhouse Programs (updated with 2025-26 results)
+// Notable Powerhouse Programs
 export const POWERHOUSE_TEAMS = [
   // 6A Powers
-  { name: 'North Shore', city: 'Houston', classification: '6A', titles: 6, note: '2025 Champ' },
-  { name: 'Duncanville', city: 'Duncanville', classification: '6A', titles: 4 },
-  { name: 'DeSoto', city: 'DeSoto', classification: '6A', titles: 2, note: '2025 6A-DII Champ' },
-  { name: 'Southlake Carroll', city: 'Southlake', classification: '6A', titles: 8 },
-  { name: 'Katy', city: 'Katy', classification: '6A', titles: 9 },
-  { name: 'Allen', city: 'Allen', classification: '6A', titles: 5 },
+  { name: 'Duncanville', city: 'Duncanville', classification: '6A', titles: 3, note: 'Reigning 6A-DI Champ' },
+  { name: 'North Shore', city: 'Houston', classification: '6A', titles: 6, note: '6A-DI Finalist' },
+  { name: 'DeSoto', city: 'DeSoto', classification: '6A', titles: 3, note: 'Reigning 6A-DII Champ' },
+  { name: 'Westlake', city: 'Austin', classification: '6A', titles: 3, note: 'Consistent Contender' },
+  { name: 'Katy', city: 'Katy', classification: '6A', titles: 9, note: 'Historic Powerhouse' },
+  { name: 'Southlake Carroll', city: 'Southlake', classification: '6A', titles: 8, note: 'Dragon Dynasty' },
+  { name: 'Martin', city: 'Arlington', classification: '6A', titles: 0, note: 'Arlington Powerhouse' },
   { name: 'Lake Travis', city: 'Austin', classification: '6A', titles: 6 },
   // 5A Powers
   { name: 'Aledo', city: 'Aledo', classification: '5A', titles: 12 },
-  { name: 'South Oak Cliff', city: 'Dallas', classification: '5A', titles: 3, note: '2025 Champ, Dynasty' },
-  { name: 'Smithson Valley', city: 'Spring Branch', classification: '5A', titles: 2, note: '2025 Champ, Back-to-back' },
+  { name: 'South Oak Cliff', city: 'Dallas', classification: '5A', titles: 3, note: 'Reigning 5A-DII Champ' },
+  { name: 'Smithson Valley', city: 'Spring Branch', classification: '5A', titles: 2, note: 'Reigning 5A-DI Champ' },
   { name: 'Highland Park', city: 'Dallas', classification: '5A', titles: 4 },
   // 4A Powers  
-  { name: 'Carthage', city: 'Carthage', classification: '4A', titles: 11, note: '2025 Champ, Perfect in finals' },
-  { name: 'Stephenville', city: 'Stephenville', classification: '4A', titles: 7, note: '2025 Champ' },
+  { name: 'Carthage', city: 'Carthage', classification: '4A', titles: 11, note: 'Reigning 4A-DII Champ' },
+  { name: 'Stephenville', city: 'Stephenville', classification: '4A', titles: 7, note: 'Reigning 4A-DI Champ' },
   { name: 'Celina', city: 'Celina', classification: '4A', titles: 8 },
   // Smaller Classification Powers
   { name: 'Mart', city: 'Mart', classification: '2A', titles: 8 },
   { name: 'Refugio', city: 'Refugio', classification: '2A', titles: 5 },
-  { name: 'Gordon', city: 'Gordon', classification: '1A', titles: 3, note: '2025 Champ, THREE-PEAT!' },
+  { name: 'Gordon', city: 'Gordon', classification: '1A', titles: 3, note: 'Reigning 1A-DI Champ' },
 ];
 
 // Six-Man Football Specific Rules

@@ -1,5 +1,26 @@
 # Changelog - Texas HS Football Tracker
 
+## [0.7.0] - 2026-02-17 - 2026 Season Reset 🏈
+
+### Changed
+- **Season Rollover (2025 → 2026)**
+  - Updated configuration to **2026-2027 Season**
+  - Set Kickoff Date: **August 27, 2026**
+  - Cleared all 2025-2026 champions and mock scores
+  - Reset `SEASON_INFO` status to `offseason`
+
+### Removed
+- "Season Complete" banners and 2025 highlights
+- Mock 2025 brackets and scoreboard data
+
+### Added
+- **Countdown to Kickoff** hero section on Home Page
+- "Upcoming Season" empty states for Scoreboard and Playoffs
+- "Offseason Mode" indicator badge
+
+---
+
+
 ## [0.6.1] - 2026-01-02 - Followed Teams Feature 🎯
 
 ### Added

@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Team {
+  id              String   @id @default(uuid())
+  name            String
+  mascot          String?
+  city            String
+  school          String?
+  classification  String   // e.g., "6A"
+  division        String?  // e.g., "Division II"
+  district        String   // e.g., "8-6A"
+  logo            String?
+  colors          String?  // JSON string or simple text "Red/Black"
+  
+  // Metadata for Scraper
+  maxprepsUrl     String?  @unique @map("maxpreps_url")
+  lastScraped     DateTime? @map("last_scraped")
+  
+  // Relations
+  homeGames       Game[]   @relation("HomeTeam")
+  awayGames       Game[]   @relation("AwayTeam")
+
+  @@map("teams")
+}
+
+model Game {
+  id              String   @id @default(uuid())
+  
+  date            DateTime
+  time            String?
+  venue           String?
+  city            String?
+  
+  status          String   @default("scheduled") // scheduled, in_progress, final
+  
+  homeTeamId      String   @map("home_team_id")
+  homeTeam        Team     @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  homeScore       Int?     @map("home_score")
+  
+  awayTeamId      String   @map("away_team_id")
+  awayTeam        Team     @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  awayScore       Int?     @map("away_score")
+  
+  isDistrict      Boolean  @default(false) @map("is_district")
+  isPlayoff       Boolean  @default(false) @map("is_playoff")
+  playoffRound    String?  @map("playoff_round")
+
+  @@map("games")
+}

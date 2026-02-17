@@ -14,130 +14,9 @@ interface BracketGame {
   date?: string;
 }
 
-// Full playoff bracket data for 2025-2026 season
+// Full playoff bracket data for 2026-2027 season
 const bracketData: Record<string, Record<string, BracketGame[][]>> = {
-  '6A': {
-    'I': [
-      // State Semifinals - Dec 13-14
-      [
-        { team1: 'North Shore', team2: 'Lake Travis', score1: 28, score2: 21, winner: 'North Shore', date: '2025-12-13' },
-        { team1: 'Duncanville', team2: 'Allen', score1: 35, score2: 28, winner: 'Duncanville', date: '2025-12-14' },
-      ],
-      // State Championship - Dec 20
-      [
-        { team1: 'North Shore', team2: 'Duncanville', score1: 10, score2: 7, winner: 'North Shore', venue: 'AT&T Stadium', date: '2025-12-20' },
-      ],
-    ],
-    'II': [
-      [
-        { team1: 'DeSoto', team2: 'Southlake Carroll', score1: 42, score2: 28, winner: 'DeSoto', date: '2025-12-13' },
-        { team1: 'C.E. King', team2: 'Vandegrift', score1: 58, score2: 41, winner: 'C.E. King', date: '2025-12-14' },
-      ],
-      [
-        { team1: 'DeSoto', team2: 'C.E. King', score1: 55, score2: 27, winner: 'DeSoto', venue: 'AT&T Stadium', date: '2025-12-20' },
-      ],
-    ],
-  },
-  '5A': {
-    'I': [
-      [
-        { team1: 'Smithson Valley', team2: 'Denton Ryan', score1: 35, score2: 21, winner: 'Smithson Valley', date: '2025-12-13' },
-        { team1: 'Frisco Lone Star', team2: 'College Station', score1: 28, score2: 14, winner: 'Frisco Lone Star', date: '2025-12-13' },
-      ],
-      [
-        { team1: 'Smithson Valley', team2: 'Frisco Lone Star', score1: 28, score2: 6, winner: 'Smithson Valley', venue: 'AT&T Stadium', date: '2025-12-19' },
-      ],
-    ],
-    'II': [
-      [
-        { team1: 'South Oak Cliff', team2: 'Boerne', score1: 42, score2: 14, winner: 'South Oak Cliff', date: '2025-12-13' },
-        { team1: 'Richmond Randle', team2: 'Iowa Colony', score1: 35, score2: 21, winner: 'Richmond Randle', date: '2025-12-13' },
-      ],
-      [
-        { team1: 'South Oak Cliff', team2: 'Richmond Randle', score1: 35, score2: 19, winner: 'South Oak Cliff', venue: 'AT&T Stadium', date: '2025-12-20' },
-      ],
-    ],
-  },
-  '4A': {
-    'I': [
-      [
-        { team1: 'Stephenville', team2: 'China Spring', score1: 42, score2: 21, winner: 'Stephenville', date: '2025-12-13' },
-        { team1: 'Kilgore', team2: 'Celina', score1: 28, score2: 24, winner: 'Kilgore', date: '2025-12-13' },
-      ],
-      [
-        { team1: 'Stephenville', team2: 'Kilgore', score1: 35, score2: 21, winner: 'Stephenville', venue: 'AT&T Stadium', date: '2025-12-19' },
-      ],
-    ],
-    'II': [
-      [
-        { team1: 'Carthage', team2: 'Cuero', score1: 49, score2: 14, winner: 'Carthage', date: '2025-12-13' },
-        { team1: 'West Orange-Stark', team2: 'Bellville', score1: 35, score2: 28, winner: 'West Orange-Stark', date: '2025-12-13' },
-      ],
-      [
-        { team1: 'Carthage', team2: 'West Orange-Stark', score1: 42, score2: 14, winner: 'Carthage', venue: 'AT&T Stadium', date: '2025-12-19' },
-      ],
-    ],
-  },
-  '3A': {
-    'I': [
-      [
-        { team1: 'Yoakum', team2: 'Columbus', score1: 28, score2: 21, winner: 'Yoakum', date: '2025-12-12' },
-        { team1: 'Grandview', team2: 'Brock', score1: 35, score2: 28, winner: 'Grandview', date: '2025-12-12' },
-      ],
-      [
-        { team1: 'Yoakum', team2: 'Grandview', score1: 24, score2: 21, winner: 'Yoakum', venue: 'AT&T Stadium', date: '2025-12-18' },
-      ],
-    ],
-    'II': [
-      [
-        { team1: 'Wall', team2: 'Gunter', score1: 35, score2: 21, winner: 'Wall', date: '2025-12-12' },
-        { team1: 'Newton', team2: 'Franklin', score1: 42, score2: 14, winner: 'Newton', date: '2025-12-12' },
-      ],
-      [
-        { team1: 'Wall', team2: 'Newton', score1: 28, score2: 21, winner: 'Wall', venue: 'AT&T Stadium', date: '2025-12-18' },
-      ],
-    ],
-  },
-  '2A': {
-    'I': [
-      [
-        { team1: 'Hamilton', team2: 'Ganado', score1: 35, score2: 28, winner: 'Hamilton', date: '2025-12-12' },
-        { team1: 'Joaquin', team2: 'Timpson', score1: 28, score2: 21, winner: 'Joaquin', date: '2025-12-12' },
-      ],
-      [
-        { team1: 'Hamilton', team2: 'Joaquin', score1: 42, score2: 28, winner: 'Hamilton', venue: 'AT&T Stadium', date: '2025-12-17' },
-      ],
-    ],
-    'II': [
-      [
-        { team1: 'Muenster', team2: 'Mart', score1: 35, score2: 14, winner: 'Muenster', date: '2025-12-12' },
-        { team1: 'Shiner', team2: 'Refugio', score1: 28, score2: 21, winner: 'Shiner', date: '2025-12-12' },
-      ],
-      [
-        { team1: 'Muenster', team2: 'Shiner', score1: 35, score2: 28, winner: 'Muenster', venue: 'AT&T Stadium', date: '2025-12-18' },
-      ],
-    ],
-  },
-  '1A': {
-    'I': [
-      [
-        { team1: 'Gordon', team2: 'Strawn', score1: 72, score2: 36, winner: 'Gordon', date: '2025-12-11' },
-        { team1: 'Rankin', team2: 'Balmorhea', score1: 64, score2: 42, winner: 'Rankin', date: '2025-12-11' },
-      ],
-      [
-        { team1: 'Gordon', team2: 'Rankin', score1: 69, score2: 22, winner: 'Gordon', venue: 'AT&T Stadium', date: '2025-12-17' },
-      ],
-    ],
-    'II': [
-      [
-        { team1: 'Jayton', team2: 'Guthrie', score1: 86, score2: 48, winner: 'Jayton', date: '2025-12-11' },
-        { team1: 'Richland Springs', team2: 'Cherokee', score1: 72, score2: 52, winner: 'Richland Springs', date: '2025-12-11' },
-      ],
-      [
-        { team1: 'Jayton', team2: 'Richland Springs', score1: 94, score2: 52, winner: 'Jayton', venue: 'AT&T Stadium', date: '2025-12-17' },
-      ],
-    ],
-  },
+  // Brackets will populate in November 2026
 };
 
 const roundNames = ['State Semifinals', 'State Championship'];
@@ -152,7 +31,7 @@ const formatDate = (dateStr?: string) => {
 export default function PlayoffsPage() {
   const [selectedClass, setSelectedClass] = useState('6A');
   const [selectedDiv, setSelectedDiv] = useState('I');
-  
+
   const classInfo = CLASSIFICATIONS.find(c => c.id === selectedClass);
   const bracket = bracketData[selectedClass]?.[selectedDiv] || [];
   const champion = CURRENT_CHAMPIONS.find(
@@ -162,11 +41,11 @@ export default function PlayoffsPage() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950">
       <Header />
-      
+
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-white mb-2">{SEASON_INFO.displayYear} Playoffs</h1>
         <p className="text-gray-400 mb-6">State Championship Brackets</p>
-        
+
         {/* Classification & Division Selectors */}
         <div className="flex flex-wrap gap-4 mb-8">
           <div className="flex flex-wrap gap-2">
@@ -174,27 +53,25 @@ export default function PlayoffsPage() {
               <button
                 key={c.id}
                 onClick={() => { setSelectedClass(c.id); setSelectedDiv('I'); }}
-                className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-                  selectedClass === c.id
-                    ? `${c.bgColor} ${c.textColor} ${c.borderColor} border-2`
-                    : 'bg-gray-800 text-gray-400 border border-gray-700 hover:bg-gray-700'
-                }`}
+                className={`px-4 py-2 rounded-lg font-semibold transition-all ${selectedClass === c.id
+                  ? `${c.bgColor} ${c.textColor} ${c.borderColor} border-2`
+                  : 'bg-gray-800 text-gray-400 border border-gray-700 hover:bg-gray-700'
+                  }`}
               >
                 {c.name}
               </button>
             ))}
           </div>
-          
+
           <div className="flex gap-2">
             {['I', 'II'].map((div) => (
               <button
                 key={div}
                 onClick={() => setSelectedDiv(div)}
-                className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-                  selectedDiv === div
-                    ? 'bg-yellow-600 text-white'
-                    : 'bg-gray-800 text-gray-400 border border-gray-700 hover:bg-gray-700'
-                }`}
+                className={`px-4 py-2 rounded-lg font-semibold transition-all ${selectedDiv === div
+                  ? 'bg-yellow-600 text-white'
+                  : 'bg-gray-800 text-gray-400 border border-gray-700 hover:bg-gray-700'
+                  }`}
               >
                 Division {div}
               </button>
@@ -245,11 +122,10 @@ export default function PlayoffsPage() {
                             <span className="text-xs text-gray-400">{formatDate(game.date)}</span>
                           </div>
                         )}
-                        
+
                         {/* Team 1 */}
-                        <div className={`flex justify-between items-center px-3 py-2 ${
-                          game.winner === game.team1 ? 'bg-green-900/30' : ''
-                        }`}>
+                        <div className={`flex justify-between items-center px-3 py-2 ${game.winner === game.team1 ? 'bg-green-900/30' : ''
+                          }`}>
                           <span className={`truncate ${game.winner === game.team1 ? 'text-white font-bold' : 'text-gray-400'}`}>
                             {game.team1}
                           </span>
@@ -257,13 +133,12 @@ export default function PlayoffsPage() {
                             {game.score1 ?? '-'}
                           </span>
                         </div>
-                        
+
                         <div className="border-t border-gray-700" />
-                        
+
                         {/* Team 2 */}
-                        <div className={`flex justify-between items-center px-3 py-2 ${
-                          game.winner === game.team2 ? 'bg-green-900/30' : ''
-                        }`}>
+                        <div className={`flex justify-between items-center px-3 py-2 ${game.winner === game.team2 ? 'bg-green-900/30' : ''
+                          }`}>
                           <span className={`truncate ${game.winner === game.team2 ? 'text-white font-bold' : 'text-gray-400'}`}>
                             {game.team2}
                           </span>
@@ -271,7 +146,7 @@ export default function PlayoffsPage() {
                             {game.score2 ?? '-'}
                           </span>
                         </div>
-                        
+
                         {game.venue && (
                           <div className="px-3 py-1 bg-black/30 text-xs text-gray-500 text-center">
                             📍 {game.venue}
@@ -282,7 +157,7 @@ export default function PlayoffsPage() {
                   </div>
                 </div>
               ))}
-              
+
               {/* Champion Display */}
               {champion && (
                 <div className="flex flex-col justify-center">
@@ -299,8 +174,9 @@ export default function PlayoffsPage() {
             </div>
           </div>
         ) : (
-          <div className="text-center py-12 text-gray-400">
-            <p>Bracket data not available for {selectedClass} Division {selectedDiv}</p>
+          <div className="text-center py-16 text-gray-400">
+            <p className="text-2xl mb-2">2026 Playoffs</p>
+            <p className="text-sm">Brackets will be released in November 2026</p>
           </div>
         )}
 
@@ -308,7 +184,7 @@ export default function PlayoffsPage() {
         {selectedClass === '1A' && (
           <div className="mt-6 p-4 rounded-lg bg-yellow-900/20 border border-yellow-700/30">
             <p className="text-yellow-400 text-sm">
-              <strong>Six-Man Football:</strong> 1A division plays six-man football with modified rules - 
+              <strong>Six-Man Football:</strong> 1A division plays six-man football with modified rules -
               80×40 yard field, 15 yards for first down, 4-point field goals, and high-scoring games are the norm!
             </p>
           </div>

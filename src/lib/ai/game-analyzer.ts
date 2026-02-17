@@ -5,6 +5,7 @@
 
 import { Game, LiveGame } from '../types';
 import eloSystem from './elo-system';
+import { teamLabel } from '../displayTeam';
 
 export interface GameAnalysis {
   momentum: number; // -100 to +100, home team perspective
@@ -89,13 +90,13 @@ class HSGameAnalyzer {
       if (Math.abs(homeStrength - awayStrength) > 15) {
         const stronger = homeStrength > awayStrength ? 'home' : 'away';
         insights.push(
-          `${stronger === 'home' ? game.homeTeam.name : game.awayTeam.name} favored by strength ratings`
+          `${stronger === 'home' ? teamLabel(game.homeTeam) : teamLabel(game.awayTeam)} favored by strength ratings`
         );
       } else {
         insights.push('This is a closely matched rivalry game');
       }
 
-      insights.push(`${game.homeTeam.name} at ${winProbs.home}% to win at home`);
+      insights.push(`${teamLabel(game.homeTeam)} at ${winProbs.home}% to win at home`);
     }
 
     // Live game insights
@@ -111,21 +112,21 @@ class HSGameAnalyzer {
       }
 
       if (momentum > 20) {
-        insights.push(`${game.homeTeam.name} has strong momentum`);
+        insights.push(`${teamLabel(game.homeTeam)} has strong momentum`);
       } else if (momentum < -20) {
-        insights.push(`${game.awayTeam.name} has the momentum advantage`);
+        insights.push(`${teamLabel(game.awayTeam)} has the momentum advantage`);
       } else {
         insights.push('Game remains competitive throughout');
       }
 
       // Win probability adjusted for situation
       const adjustedProb = this.adjustWinProbability(winProbs.home, game.quarter || 1, momentum);
-      insights.push(`Current win probability: ${adjustedProb}% for ${game.homeTeam.name}`);
+      insights.push(`Current win probability: ${adjustedProb}% for ${teamLabel(game.homeTeam)}`);
     }
 
     // Postgame insights
     if (game.status === 'final') {
-      const winner = (game.homeScore || 0) > (game.awayScore || 0) ? game.homeTeam.name : game.awayTeam.name;
+      const winner = (game.homeScore || 0) > (game.awayScore || 0) ? teamLabel(game.homeTeam) : teamLabel(game.awayTeam);
       const margin = Math.abs((game.homeScore || 0) - (game.awayScore || 0));
       insights.push(`${winner} wins ${game.homeScore}-${game.awayScore}`);
 
