@@ -12,6 +12,7 @@
     "@prisma/client": "^5.19.0",
     "lucide-react": "^0.562.0",
     "next": "16.1.0",
+    "posthog-js": "^1.347.2",
     "react": "19.2.3",
     "react-dom": "19.2.3"
   },
