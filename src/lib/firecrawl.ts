@@ -28,7 +28,9 @@ export class FirecrawlClient {
 
     constructor(apiKey?: string) {
         this.apiKey = apiKey || process.env.FIRECRAWL_API_KEY;
-        if (!this.apiKey) {
+        // Only log on the server — FIRECRAWL_API_KEY is server-only (no NEXT_PUBLIC_ prefix).
+        // Client components that import this module will always see undefined here, which is expected.
+        if (!this.apiKey && typeof window === 'undefined') {
             console.error('❌ CRITICAL: No FIRECRAWL_API_KEY found. Data fetching will fail.');
         }
     }
