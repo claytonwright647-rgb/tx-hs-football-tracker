@@ -17,21 +17,27 @@ export interface Classification {
 export interface Team {
   id: string;
   name: string;
+  slug?: string;
   mascot: string;
   city: string;
-  school: string;
+  school?: string;
   classification: string;
   division?: string;
   district: string;
   region?: number;
-  record: string;
+  record?: string;
   districtRecord?: string;
   ranking?: number;
   logo?: string;
+  logoUrl?: string;
   colors?: {
     primary: string;
     secondary: string;
   };
+  latitude?: number;
+  longitude?: number;
+  maxprepsUrl?: string;
+  dctfUrl?: string;
 }
 
 
