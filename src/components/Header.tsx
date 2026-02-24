@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { SEASON_INFO, NEXT_SEASON } from '@/lib/constants';
+import { SEASON_INFO, NEXT_SEASON, LAST_SEASON } from '@/lib/constants';
 import SearchBar from './SearchBar';
 import SeasonCountdown from './SeasonCountdown';
 import { AIStatusButton } from './AIStatusButton';
@@ -60,7 +60,7 @@ export default function Header() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4 pb-4 border-b border-gray-800">
           <div className="text-center sm:text-left">
             <span className="text-gray-400 text-sm">
-              {SEASON_INFO.displayYear} Season Complete! 🏆
+              {LAST_SEASON.displayYear} Season Complete! 🏆
             </span>
           </div>
           <SeasonCountdown 

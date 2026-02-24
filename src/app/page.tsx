@@ -1,6 +1,7 @@
 import Header from '@/components/Header';
 import ClassificationCard from '@/components/ClassificationCard';
 import SeasonIntelligence from '@/components/SeasonIntelligence';
+import HeroCountdown from '@/components/HeroCountdown';
 import { CLASSIFICATIONS, CURRENT_CHAMPIONS, SEASON_INFO, NEXT_SEASON } from '@/lib/constants';
 
 export default function Home() {
@@ -29,24 +30,7 @@ export default function Home() {
               The road to the 2026 State Championships begins now.
             </p>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto mb-8">
-              <div className="bg-gray-900/60 p-4 rounded-lg border border-gray-700 backdrop-blur-sm">
-                <span className="block text-3xl font-bold text-white">191</span>
-                <span className="text-xs text-gray-400 uppercase tracking-widest">Days</span>
-              </div>
-              <div className="bg-gray-900/60 p-4 rounded-lg border border-gray-700 backdrop-blur-sm">
-                <span className="block text-3xl font-bold text-white">06</span>
-                <span className="text-xs text-gray-400 uppercase tracking-widest">Hours</span>
-              </div>
-              <div className="bg-gray-900/60 p-4 rounded-lg border border-gray-700 backdrop-blur-sm">
-                <span className="block text-3xl font-bold text-white">36</span>
-                <span className="text-xs text-gray-400 uppercase tracking-widest">Mins</span>
-              </div>
-              <div className="bg-gray-900/60 p-4 rounded-lg border border-gray-700 backdrop-blur-sm">
-                <span className="block text-3xl font-bold text-white">52</span>
-                <span className="text-xs text-gray-400 uppercase tracking-widest">Secs</span>
-              </div>
-            </div>
+            <HeroCountdown targetDate={`${SEASON_INFO.regularSeasonStart}T19:00:00-05:00`} />
 
             <p className="text-gray-400 text-sm">
               Kickoff set for <span className="text-white font-bold">{new Date(SEASON_INFO.regularSeasonStart).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span> across the Lone Star State.

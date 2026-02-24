@@ -7,13 +7,14 @@ export const FOLLOWED_TEAMS: Team[] = [
   {
     id: 'martin-arlington',
     name: 'Martin',
+    slug: 'martin-arlington',
     mascot: 'Warriors',
     city: 'Arlington',
-    school: 'James Martin High School',
+    // school: 'James Martin High School', // Removed
     classification: '6A',
     division: 'Division II',
     district: '8-6A',
-    region: 1,
+    // region: 1, // Removed
     record: '4-6',
     districtRecord: '3-4',
     colors: {
@@ -117,12 +118,18 @@ export const SEASON_INFO = {
   championshipVenue: 'AT&T Stadium, Arlington',
 };
 
-// NEXT Season - Placeholder
+// Last completed season
+export const LAST_SEASON = {
+  year: '2025-2026',
+  displayYear: '2025-26',
+};
+
+// NEXT / Upcoming Season
 export const NEXT_SEASON = {
-  year: '2027-2028',
-  displayYear: '2027-28',
-  kickoffDate: '2027-08-26',
-  fallCampStart: '2027-08-02',
+  year: '2026-2027',
+  displayYear: '2026-27',
+  kickoffDate: '2026-08-27',
+  fallCampStart: '2026-08-03',
 };
 
 
