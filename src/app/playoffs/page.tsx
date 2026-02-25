@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Header from '@/components/Header';
-import { CLASSIFICATIONS, CURRENT_CHAMPIONS, SEASON_INFO } from '@/lib/constants';
+import { CLASSIFICATIONS, CURRENT_CHAMPIONS, SEASON_INFO, LAST_SEASON } from '@/lib/constants';
 
 interface BracketGame {
   team1: string;
@@ -43,7 +43,7 @@ export default function PlayoffsPage() {
       <Header />
 
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-white mb-2">{SEASON_INFO.displayYear} Playoffs</h1>
+        <h1 className="text-3xl font-bold text-white mb-2">{LAST_SEASON.displayYear} Playoffs</h1>
         <p className="text-gray-400 mb-6">State Championship Brackets</p>
 
         {/* Classification & Division Selectors */}
