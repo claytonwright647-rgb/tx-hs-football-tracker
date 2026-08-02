@@ -9,6 +9,7 @@ import {
   getSeasonConfig,
   SeasonPhase,
 } from '@/lib/seasonIntelligence';
+import { isAuthorizedCronRequest } from '@/lib/cron-auth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60; // 60 second timeout for cron
@@ -22,6 +23,14 @@ interface FetchResult {
   success: boolean;
   recordsFound: number;
   error?: string;
+}
+
+interface EspnEvent {
+  status?: {
+    type?: {
+      state?: string;
+    };
+  };
 }
 
 async function fetchESPNSchedules(state: string = 'texas'): Promise<FetchResult> {
@@ -61,9 +70,9 @@ async function fetchESPNLiveScores(): Promise<FetchResult> {
       return { source: 'ESPN Live Scores', success: false, recordsFound: 0, error: `HTTP ${res.status}` };
     }
     
-    const data = await res.json();
-    const liveGames = (data.events || []).filter((e: any) => 
-      e.status?.type?.state === 'in'
+    const data = await res.json() as { events?: EspnEvent[] };
+    const liveGames = (data.events || []).filter((event) =>
+      event.status?.type?.state === 'in'
     );
     
     console.log(`[CRON] Found ${liveGames.length} live games`);
@@ -125,12 +134,10 @@ export async function GET(request: Request) {
   const startTime = Date.now();
   
   try {
-    // Verify cron secret (optional security)
+    // Keep the existing Vercel token valid during the bounded handoff while
+    // accepting a separate destination-only token for Cloud Hermes.
     const authHeader = request.headers.get('authorization');
-    const cronSecret = process.env.CRON_SECRET;
-    
-    // Skip auth check if no secret configured (for testing)
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    if (!isAuthorizedCronRequest(authHeader)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
