@@ -12,7 +12,7 @@ export const maxDuration = 60;
 /**
  * Main GET handler - Fetch Brain AI state
  */
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     // Proxy to main dashboard Brain AI
     const response = await fetch(`${sportsOrigin}/api/ai-brain`, {
@@ -36,10 +36,10 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      system: 'active',
+      system: data.state ? 'available' : 'not_measured',
       leagueId: 'hs-football',
       timestamp: new Date().toISOString(),
-      message: 'Brain AI system is running for HS Football',
+      message: data.state ? 'Brain AI state was received for HS Football' : 'Brain AI state was not measured',
       ...data
     });
   } catch (error) {
@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
         error: String(error),
         message: 'Brain AI offline - using local mode'
       },
-      { status: 200 } // Return 200 to not break the UI
+      { status: 503 }
     );
   }
 }
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
         error: String(error),
         response: '❌ I\'m having trouble connecting to the main AI Brain. Please try again.'
       },
-      { status: 200 } // Return 200 to not break the UI
+      { status: 502 }
     );
   }
 }

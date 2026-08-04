@@ -1,206 +1,26 @@
-'use client';
-
-import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
-import GameCard from '@/components/GameCard';
-import GameDetailModal from '@/components/GameDetailModal';
+import Scoreboard from '@/components/Scoreboard';
 import SeasonIntelligence from '@/components/SeasonIntelligence';
-import AIGameInsights from '@/components/AIGameInsights';
-import { CLASSIFICATIONS, LAST_SEASON } from '@/lib/constants';
-import { Game, LiveGame } from '@/lib/types';
-
-// Mock games data - 2026 Season (Upcoming)
-const allGames: Game[] = [];
-
-
-type FilterType = 'all' | 'live' | 'final' | 'upcoming';
-
+import { getCurrentSeasonYear } from '@/lib/seasonIntelligence';
 
 export default function ScoreboardPage() {
-  const [selectedClass, setSelectedClass] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<FilterType>('all');
-  const [games, setGames] = useState<Game[]>(allGames);
-  const [selectedGame, setSelectedGame] = useState<Game | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const handleGameClick = (game: Game) => {
-    setSelectedGame(game);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedGame(null);
-  };
-
-  // Filter games
-  useEffect(() => {
-    let filtered = [...allGames];
-
-    if (selectedClass !== 'all') {
-      filtered = filtered.filter(g => g.classification === selectedClass);
-    }
-
-    if (statusFilter === 'live') {
-      filtered = filtered.filter(g => g.status === 'in_progress' || g.status === 'halftime');
-    } else if (statusFilter === 'final') {
-      filtered = filtered.filter(g => g.status === 'final');
-    } else if (statusFilter === 'upcoming') {
-      filtered = filtered.filter(g => g.status === 'scheduled');
-    }
-
-    // Sort by date (most recent first)
-    filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-    setGames(filtered);
-  }, [selectedClass, statusFilter]);
-
-  const liveCount = allGames.filter(g => g.status === 'in_progress' || g.status === 'halftime').length;
+  const seasonYear = getCurrentSeasonYear();
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950">
       <Header />
 
       <div className="container mx-auto px-4 py-8">
-        {/* Season Intelligence Banner */}
         <SeasonIntelligence />
 
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-white">Scoreboard</h1>
-            <p className="text-gray-400">{LAST_SEASON.displayYear} Season — Final Results</p>
-          </div>
-          {liveCount > 0 && (
-            <div className="flex items-center gap-2 px-4 py-2 bg-red-600/30 border border-red-500 rounded-lg">
-              <span className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-              <span className="text-red-400 font-bold">{liveCount} LIVE</span>
-            </div>
-          )}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-white">{seasonYear} Scoreboard</h1>
+          <p className="mt-1 text-gray-400">
+            Officially sourced live, scheduled, and final games. Missing feeds are labeled instead of filled with old results.
+          </p>
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-wrap gap-4 mb-8">
-          {/* Classification Filter */}
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => setSelectedClass('all')}
-              className={`px-4 py-2 rounded-lg font-semibold transition-all ${selectedClass === 'all'
-                ? 'bg-orange-600 text-white'
-                : 'bg-gray-800 text-gray-400 border border-gray-700 hover:bg-gray-700'
-                }`}
-            >
-              All Classes
-            </button>
-            {CLASSIFICATIONS.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => setSelectedClass(c.id)}
-                className={`px-4 py-2 rounded-lg font-semibold transition-all ${selectedClass === c.id
-                  ? `${c.bgColor} ${c.textColor} ${c.borderColor} border-2`
-                  : 'bg-gray-800 text-gray-400 border border-gray-700 hover:bg-gray-700'
-                  }`}
-              >
-                {c.name}
-              </button>
-            ))}
-          </div>
-
-          {/* Status Filter */}
-          <div className="flex gap-2 ml-auto">
-            {(['all', 'live', 'final', 'upcoming'] as FilterType[]).map((filter) => (
-              <button
-                key={filter}
-                onClick={() => setStatusFilter(filter)}
-                className={`px-3 py-1 rounded text-sm font-semibold transition-all ${statusFilter === filter
-                  ? filter === 'live' ? 'bg-red-600 text-white' : 'bg-gray-600 text-white'
-                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                  }`}
-              >
-                {filter === 'live' ? '🔴 Live' : filter.charAt(0).toUpperCase() + filter.slice(1)}
-              </button>
-            ))}
-          </div>
-        </div>
-
-
-        {/* Games Grid */}
-        {games.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {games.map((game) => (
-              <GameCard
-                key={game.id}
-                game={game}
-                onClick={() => handleGameClick(game)}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12 text-gray-400">
-            <p className="text-xl mb-2">No games found</p>
-            <p className="text-sm">Try adjusting your filters</p>
-          </div>
-        )}
-
-        {/* Summary */}
-        <div className="mt-8 p-4 rounded-lg bg-gray-800/50 border border-gray-700">
-          <div className="flex flex-wrap gap-6 justify-center text-sm">
-            <div className="text-center">
-              <span className="text-gray-400">Total Games</span>
-              <p className="text-2xl font-bold text-white">{allGames.length}</p>
-            </div>
-            <div className="text-center">
-              <span className="text-gray-400">Live</span>
-              <p className="text-2xl font-bold text-red-400">{allGames.filter(g => g.status === 'in_progress').length}</p>
-            </div>
-            <div className="text-center">
-              <span className="text-gray-400">Final</span>
-              <p className="text-2xl font-bold text-green-400">{allGames.filter(g => g.status === 'final').length}</p>
-            </div>
-            <div className="text-center">
-              <span className="text-gray-400">Upcoming</span>
-              <p className="text-2xl font-bold text-yellow-400">{allGames.filter(g => g.status === 'scheduled').length}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Game Detail Modal */}
-        {selectedGame && (
-          <div className="mt-8 p-6 rounded-xl bg-gray-800/50 border border-gray-700">
-            <h2 className="text-2xl font-bold text-white mb-4">
-              {selectedGame.homeTeam.name} vs {selectedGame.awayTeam.name}
-            </h2>
-            <AIGameInsights
-              gameId={selectedGame.id}
-              homeTeamId={selectedGame.homeTeam.id}
-              awayTeamId={selectedGame.awayTeam.id}
-              homeTeamName={selectedGame.homeTeam.name}
-              awayTeamName={selectedGame.awayTeam.name}
-              gameStatus={selectedGame.status === 'in_progress' ? 'in_progress' : selectedGame.status === 'final' ? 'final' : 'scheduled'}
-            />
-          </div>
-        )}
-
-        <GameDetailModal
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          game={selectedGame ? {
-            homeTeam: selectedGame.homeTeam.name,
-            awayTeam: selectedGame.awayTeam.name,
-            homeScore: selectedGame.homeScore,
-            awayScore: selectedGame.awayScore,
-            homeAbbrev: selectedGame.homeTeam.name.substring(0, 3).toUpperCase(),
-            awayAbbrev: selectedGame.awayTeam.name.substring(0, 3).toUpperCase(),
-            homeColor: selectedGame.homeTeam.colors?.primary?.replace('#', ''),
-            awayColor: selectedGame.awayTeam.colors?.primary?.replace('#', ''),
-            status: selectedGame.status === 'in_progress' || selectedGame.status === 'halftime' ? 'in'
-              : selectedGame.status === 'final' ? 'final' : 'scheduled',
-            venue: selectedGame.venue,
-            date: selectedGame.date,
-            time: selectedGame.time,
-            classification: `${selectedGame.classification}${selectedGame.division ? `-${selectedGame.division}` : ''}`,
-            situation: (selectedGame as LiveGame).situation,
-          } : null}
-        />
+        <Scoreboard />
       </div>
     </main>
   );

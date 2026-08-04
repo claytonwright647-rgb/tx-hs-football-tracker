@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Play, Video, ExternalLink } from 'lucide-react';
 
 interface HighlightVideo {
@@ -16,13 +16,18 @@ interface HighlightVideo {
 
 interface GameHighlightsProps {
   gameId: string;
-  homeTeam: string;
-  awayTeam: string;
   status: string; // 'final' | 'completed' | 'post'
-  date?: string;
 }
 
-export default function GameHighlights({ gameId, homeTeam, awayTeam, status, date }: GameHighlightsProps) {
+interface HighlightsResponse {
+  success: boolean;
+  available?: boolean;
+  highlights?: HighlightVideo[];
+  message?: string;
+  error?: string;
+}
+
+export default function GameHighlights({ gameId, status }: GameHighlightsProps) {
   const [highlights, setHighlights] = useState<HighlightVideo[]>([]);
   const [selectedVideo, setSelectedVideo] = useState<HighlightVideo | null>(null);
   const [loading, setLoading] = useState(false);
@@ -30,13 +35,7 @@ export default function GameHighlights({ gameId, homeTeam, awayTeam, status, dat
 
   const isFinal = status === 'final' || status === 'post' || status === 'completed';
 
-  useEffect(() => {
-    if (isFinal) {
-      fetchHighlights();
-    }
-  }, [gameId, isFinal]);
-
-  const fetchHighlights = async () => {
+  const fetchHighlights = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -49,50 +48,26 @@ export default function GameHighlights({ gameId, homeTeam, awayTeam, status, dat
         throw new Error('Failed to fetch highlights');
       }
 
-      const data = await response.json();
-      setHighlights(data.highlights || generateMockHighlights());
+      const data = await response.json() as HighlightsResponse;
+      if (!data.success) {
+        throw new Error(data.error || 'The highlights source did not return a usable response');
+      }
+      setHighlights(data.highlights || []);
+      setError(data.available === false ? (data.message || 'Verified highlights are not available for this game.') : null);
     } catch (err) {
       console.error('Error fetching highlights:', err);
-      // Show mock highlights for demo
-      setHighlights(generateMockHighlights());
-      setError(null); // Don't show error, just use mock data
+      setHighlights([]);
+      setError(err instanceof Error ? err.message : 'Verified highlights could not be loaded.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [gameId]);
 
-  const generateMockHighlights = (): HighlightVideo[] => {
-    return [
-      {
-        id: '1',
-        title: `${homeTeam} vs ${awayTeam} - Full Game Highlights`,
-        source: 'youtube',
-        url: `https://www.youtube.com/embed/watch?v=dQw4w9WgXcQ`,
-        thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
-        duration: '12:34',
-        description: 'Complete highlight reel from the game',
-        uploadedDate: date || new Date().toLocaleDateString(),
-      },
-      {
-        id: '2',
-        title: 'Top Plays & Best Moments',
-        source: 'maxpreps',
-        url: 'https://www.maxpreps.com/',
-        thumbnail: 'https://via.placeholder.com/320x180?text=Top+Plays',
-        duration: '5:42',
-        description: 'Best plays from both teams',
-      },
-      {
-        id: '3',
-        title: 'Game Analysis & Breakdown',
-        source: 'local',
-        url: '#',
-        thumbnail: 'https://via.placeholder.com/320x180?text=Game+Breakdown',
-        duration: '8:15',
-        description: 'Detailed analysis of key moments',
-      },
-    ];
-  };
+  useEffect(() => {
+    if (isFinal) {
+      fetchHighlights();
+    }
+  }, [fetchHighlights, isFinal]);
 
   if (!isFinal) {
     return null;
@@ -107,7 +82,7 @@ export default function GameHighlights({ gameId, homeTeam, awayTeam, status, dat
       </div>
 
       {error && (
-        <div className="p-3 bg-red-900/20 border border-red-700/30 rounded-lg text-red-400 text-sm mb-4">
+        <div role="status" className="mb-4 rounded-lg border border-amber-700/30 bg-amber-900/20 p-3 text-sm text-amber-300">
           {error}
         </div>
       )}
@@ -118,9 +93,9 @@ export default function GameHighlights({ gameId, homeTeam, awayTeam, status, dat
         </div>
       )}
 
-      {!loading && highlights.length === 0 && (
+      {!loading && !error && highlights.length === 0 && (
         <div className="p-6 bg-gray-800/30 rounded-lg border border-gray-700/50 text-center">
-          <p className="text-gray-400">No highlights available yet. Check back soon!</p>
+          <p className="text-gray-400">No verified highlights are available for this game.</p>
         </div>
       )}
 

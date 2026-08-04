@@ -1,8 +1,8 @@
 import Header from '@/components/Header';
-import ClassificationCard from '@/components/ClassificationCard';
 import SeasonIntelligence from '@/components/SeasonIntelligence';
 import HeroCountdown from '@/components/HeroCountdown';
-import { CLASSIFICATIONS, CURRENT_CHAMPIONS, SEASON_INFO, NEXT_SEASON } from '@/lib/constants';
+import Scoreboard from '@/components/Scoreboard';
+import { SEASON_INFO } from '@/lib/constants';
 import { getCurrentPhase, getPhaseConfig } from '@/lib/seasonIntelligence';
 
 export default function Home() {
@@ -25,9 +25,9 @@ export default function Home() {
               <span className="text-blue-300 text-xs font-semibold tracking-wider uppercase">{currentPhase.displayName}</span>
             </div>
 
-            <h1 className="text-4xl md:text-6xl font-black text-white mb-2 tracking-tight">
+            <h2 className="text-4xl md:text-6xl font-black text-white mb-2 tracking-tight">
               TEXAS HS FOOTBALL
-            </h1>
+            </h2>
             <p className="text-xl text-blue-200 font-medium mb-8">
               The road to the 2026 State Championships begins now.
             </p>
@@ -35,12 +35,21 @@ export default function Home() {
             <HeroCountdown targetDate={`${SEASON_INFO.regularSeasonStart}T19:00:00-05:00`} />
 
             <p className="text-gray-400 text-sm">
-              Kickoff set for <span className="text-white font-bold">{new Date(SEASON_INFO.regularSeasonStart).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span> across the Lone Star State.
+              Kickoff set for <span className="text-white font-bold">{new Date(`${SEASON_INFO.regularSeasonStart}T12:00:00-05:00`).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'America/Chicago' })}</span> across the Lone Star State.
             </p>
           </div>
         </div>
 
-
+        <section className="mb-10" aria-labelledby="games-heading">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-orange-400">Official game center</p>
+              <h2 id="games-heading" className="text-3xl font-black text-white">Live scores and schedules</h2>
+            </div>
+            <a href="/scoreboard" className="text-sm font-semibold text-orange-300 hover:text-orange-200">Open full scoreboard →</a>
+          </div>
+          <Scoreboard />
+        </section>
 
         {/* Info Sections */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -58,7 +67,7 @@ export default function Home() {
             <p className="text-gray-400 text-sm leading-relaxed">
               Six-man football is played by smaller schools in rural Texas. The game features a smaller field
               (80×40 yards), 15 yards for a first down, and all players are eligible receivers. Field goals
-              are worth 4 points, and there's a 45-point mercy rule. It's fast-paced, high-scoring Texas football
+              are worth 4 points, and there&apos;s a 45-point mercy rule. It&apos;s fast-paced, high-scoring Texas football
               at its finest!
             </p>
           </div>
@@ -67,7 +76,7 @@ export default function Home() {
         {/* Footer */}
         <footer className="text-center py-8 border-t border-gray-800">
           <p className="text-gray-500 text-sm mb-2">
-            Data sourced from UIL, MaxPreps, and Dave Campbell's Texas Football
+            Data sourced from UIL, MaxPreps, and Dave Campbell&apos;s Texas Football
           </p>
           <div className="flex items-center justify-center gap-4">
             <a

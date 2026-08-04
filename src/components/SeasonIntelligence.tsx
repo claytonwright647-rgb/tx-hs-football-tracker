@@ -22,16 +22,11 @@ interface SeasonStatus {
 }
 
 export default function SeasonIntelligence() {
-  const [status, setStatus] = useState<SeasonStatus | null>(null);
-  const [timeUntil, setTimeUntil] = useState<string>('');
-
-  useEffect(() => {
-    // Calculate season status
+  const [status] = useState<SeasonStatus>(() => {
     const phase = getCurrentPhase();
     const phaseConfig = getPhaseConfig(phase);
     const seasonConfig = getSeasonConfig();
-    
-    setStatus({
+    return {
       phase,
       displayName: phaseConfig.displayName,
       description: phaseConfig.description,
@@ -40,8 +35,9 @@ export default function SeasonIntelligence() {
       seasonYear: seasonConfig.year,
       showCountdown: phaseConfig.showCountdown,
       countdownTarget: phaseConfig.countdownTarget,
-    });
-  }, []);
+    };
+  });
+  const [timeUntil, setTimeUntil] = useState<string>('');
 
   useEffect(() => {
     if (!status?.showCountdown) return;
@@ -75,8 +71,6 @@ export default function SeasonIntelligence() {
     const interval = setInterval(updateCountdown, 1000);
     return () => clearInterval(interval);
   }, [status?.showCountdown]);
-
-  if (!status) return null;
 
   // Phase-specific styling
   const getPhaseColors = (phase: SeasonPhase) => {

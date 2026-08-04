@@ -360,8 +360,8 @@ export function shouldFetchLiveData(date?: Date): boolean {
 }
 
 // Check if we should be looking for schedule updates
-export function shouldFetchSchedules(): boolean {
-  const phase = getCurrentPhase();
+export function shouldFetchSchedules(date?: Date): boolean {
+  const phase = getCurrentPhase(date);
   return ['schedule_watch', 'preseason', 'fall_camp', 'scrimmages', 'regular_season', 'playoffs', 'state_championships'].includes(phase);
 }
 

@@ -152,17 +152,11 @@ export function FootballField({ situation, homeTeam, awayTeam }: FootballFieldPr
             </>
           )}
 
-          {/* Show default ball at 50 when no live data */}
-          {!hasLiveData && (
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl opacity-30">
-              🏈
-            </div>
-          )}
         </div>
       </div>
       
       {/* Legend */}
-      <div className="flex justify-center gap-4 mt-2 text-xs text-gray-500">
+      {hasLiveData && <div className="flex justify-center gap-4 mt-2 text-xs text-gray-500">
         <span className="flex items-center gap-1">
           <span className="w-3 h-1 bg-cyan-400 rounded" /> Line of Scrimmage
         </span>
@@ -172,7 +166,7 @@ export function FootballField({ situation, homeTeam, awayTeam }: FootballFieldPr
         <span className="flex items-center gap-1">
           🏈 Ball Position
         </span>
-      </div>
+      </div>}
     </div>
   );
 }

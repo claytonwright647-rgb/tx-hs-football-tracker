@@ -5,6 +5,7 @@ import {
   getCurrentPhase,
   getPhaseConfig,
   shouldFetchLiveData,
+  shouldFetchSchedules,
   type SeasonPhase,
 } from '@/lib/seasonIntelligence';
 
@@ -14,13 +15,20 @@ const CACHE_TTL = 60 * 1000; // 1 minute cache for live updates
 
 // Convert MaxPreps game to our LiveGame format
 function convertToLiveGame(mpGame: MaxPrepsGame): LiveGame {
+  const [baseClassification, divisionCode] = mpGame.classification.split(' ');
+  const division = divisionCode === 'D1'
+    ? 'Division I'
+    : divisionCode === 'D2'
+      ? 'Division II'
+      : undefined;
   const homeTeam: Team = {
     id: mpGame.homeTeamId || mpGame.homeTeam.toLowerCase().replace(/\s+/g, '-'),
     name: mpGame.homeTeam,
     mascot: '',
     city: mpGame.city || '',
     school: mpGame.homeTeam,
-    classification: mpGame.classification,
+    classification: baseClassification,
+    division,
     district: '',
     record: '',
     logo: mpGame.homeTeamLogo || undefined,
@@ -32,7 +40,8 @@ function convertToLiveGame(mpGame: MaxPrepsGame): LiveGame {
     mascot: '',
     city: '',
     school: mpGame.awayTeam,
-    classification: mpGame.classification,
+    classification: baseClassification,
+    division,
     district: '',
     record: '',
     logo: mpGame.awayTeamLogo || undefined,
@@ -48,10 +57,11 @@ function convertToLiveGame(mpGame: MaxPrepsGame): LiveGame {
     id: mpGame.gameId,
     homeTeam,
     awayTeam,
-    homeScore: mpGame.homeScore || 0,
-    awayScore: mpGame.awayScore || 0,
+    homeScore: mpGame.homeScore ?? undefined,
+    awayScore: mpGame.awayScore ?? undefined,
     status,
-    classification: mpGame.classification,
+    classification: baseClassification,
+    division,
     isPlayoff: mpGame.isPlayoff,
     playoffRound: mpGame.playoffRound,
     venue: mpGame.venue,
@@ -104,8 +114,9 @@ async function fetchAllGames(phase: SeasonPhase): Promise<LiveGame[]> {
   playoffResults.forEach(games => allGames.push(...games));
 
   // Remove duplicates by gameId
+  const validGames = allGames.filter((game) => game.homeTeam.name && game.awayTeam.name && game.date);
   const uniqueGames = Array.from(
-    new Map(allGames.map(g => [g.id, g])).values()
+    new Map(validGames.map(g => [g.id, g])).values()
   );
 
   return uniqueGames;
@@ -121,8 +132,10 @@ export async function GET(request: Request) {
   try {
     const now = new Date();
     const phase = getCurrentPhase(now);
+    const livePollingActive = shouldFetchLiveData(now);
+    const schedulePollingActive = shouldFetchSchedules(now);
 
-    if (!shouldFetchLiveData(now)) {
+    if (!livePollingActive && !schedulePollingActive) {
       return NextResponse.json({
         success: true,
         count: 0,
@@ -131,7 +144,7 @@ export async function GET(request: Request) {
         cached: false,
         sourceStatus: 'not_scheduled_for_current_phase',
         phase,
-        message: `Live score polling is not scheduled during ${getPhaseConfig(phase).displayName}. Published schedules remain available.`,
+        message: `Game and schedule polling is not scheduled during ${getPhaseConfig(phase).displayName}.`,
       });
     }
 
@@ -156,6 +169,13 @@ export async function GET(request: Request) {
         games,
         timestamp: new Date(gamesCache.timestamp).toISOString(),
         cached: true,
+        sourceStatus: games.length > 0 ? 'available' : (livePollingActive ? 'current_source_empty' : 'schedule_source_empty'),
+        phase,
+        message: games.length > 0
+          ? undefined
+          : livePollingActive
+            ? 'The current official source returned no published games for this filter.'
+            : 'The current official schedule source returned no published games for this filter.',
       });
     }
 
@@ -187,6 +207,13 @@ export async function GET(request: Request) {
       games,
       timestamp: new Date().toISOString(),
       cached: false,
+      sourceStatus: games.length > 0 ? 'available' : (livePollingActive ? 'current_source_empty' : 'schedule_source_empty'),
+      phase,
+      message: games.length > 0
+        ? undefined
+        : livePollingActive
+          ? 'The current official source returned no published games for this filter.'
+          : 'The current official schedule source returned no published games for this filter.',
     });
   } catch (error) {
     console.error('API Error:', error);

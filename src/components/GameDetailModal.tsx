@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { X } from 'lucide-react';
 import { FootballField } from './fields';
 import GameHighlights from './GameHighlights';
@@ -36,6 +37,15 @@ interface GameDetailModalProps {
 }
 
 export default function GameDetailModal({ isOpen, onClose, game }: GameDetailModalProps) {
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen || !game) return null;
 
   const isLive = game.status === 'in' || game.status === 'live';
@@ -47,7 +57,7 @@ export default function GameDetailModal({ isOpen, onClose, game }: GameDetailMod
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
       
       {/* Modal */}
-      <div className="relative bg-gray-900 border border-gray-700 w-full max-w-3xl max-h-[90vh] rounded-2xl overflow-hidden flex flex-col">
+      <div role="dialog" aria-modal="true" aria-labelledby="game-detail-title" className="relative bg-gray-900 border border-gray-700 w-full max-w-3xl max-h-[90vh] rounded-2xl overflow-hidden flex flex-col">
         {/* Header */}
         <div className="bg-gradient-to-r from-orange-600/20 to-gray-900 p-4 border-b border-gray-700 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -64,13 +74,14 @@ export default function GameDetailModal({ isOpen, onClose, game }: GameDetailMod
               <span className="text-xs text-gray-400">FINAL</span>
             )}
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
+          <button type="button" onClick={onClose} aria-label="Close game details" className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
             <X className="w-5 h-5 text-gray-400" />
           </button>
         </div>
 
         {/* Score Section */}
         <div className="p-6 bg-gray-800/30">
+          <h2 id="game-detail-title" className="sr-only">{game.awayTeam} at {game.homeTeam}</h2>
           {/* Venue */}
           {game.venue && (
             <div className="text-center text-sm text-gray-400 mb-4">
@@ -134,10 +145,7 @@ export default function GameDetailModal({ isOpen, onClose, game }: GameDetailMod
           <div className="p-4 border-t border-gray-700">
             <GameHighlights
               gameId={game.id}
-              homeTeam={game.homeTeam}
-              awayTeam={game.awayTeam}
               status={game.status || 'final'}
-              date={game.date}
             />
           </div>
         )}

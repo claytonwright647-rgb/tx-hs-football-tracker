@@ -2,7 +2,6 @@
 // MaxPreps is the official UIL partner for Texas HS sports data
 
 const MAXPREPS_BASE_URL = 'https://www.maxpreps.com';
-const MAXPREPS_API = 'https://api.maxpreps.com';
 const STATE = 'tx';
 
 // Cache for team logos (team name -> logo URL)
@@ -143,6 +142,14 @@ const CLASSIFICATION_MAP: Record<string, string> = {
   '5A D2': 'class-5a-division-2',
 };
 
+function getClassificationSlug(classification: string): string | null {
+  if (CLASSIFICATION_MAP[classification]) return CLASSIFICATION_MAP[classification];
+  const match = classification.match(/^([1-6]A)(?: D([12]))?$/);
+  if (!match) return null;
+  const base = match[1].toLowerCase();
+  return match[2] ? `class-${base}-division-${match[2]}` : `class-${base}`;
+}
+
 const DIVISION_MAP: Record<string, string> = {
   'Division I': 'division-1',
   'Division II': 'division-2',
@@ -151,18 +158,26 @@ const DIVISION_MAP: Record<string, string> = {
 };
 
 // Parse MaxPreps JSON-LD data embedded in HTML
-function extractJsonLd(html: string, type: string): any[] {
-  const regex = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g;
-  const results: any[] = [];
+function extractJsonLd(html: string, type: string): unknown[] {
+  const regex = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+  const results: unknown[] = [];
   let match;
+
+  const visit = (value: unknown) => {
+    if (Array.isArray(value)) {
+      value.forEach(visit);
+      return;
+    }
+    if (!value || typeof value !== 'object') return;
+    const item = value as Record<string, unknown>;
+    if (item['@type'] === type) results.push(item);
+    if (Array.isArray(item['@graph'])) item['@graph'].forEach(visit);
+  };
   
   while ((match = regex.exec(html)) !== null) {
     try {
-      const data = JSON.parse(match[1]);
-      if (data['@type'] === type || (Array.isArray(data) && data[0]?.['@type'] === type)) {
-        results.push(data);
-      }
-    } catch (e) {
+      visit(JSON.parse(match[1]));
+    } catch {
       // Skip invalid JSON
     }
   }
@@ -183,7 +198,8 @@ export async function fetchScores(
   classification: string,
   week?: number
 ): Promise<MaxPrepsGame[]> {
-  const classSlug = CLASSIFICATION_MAP[classification] || 'class-6a';
+  const classSlug = getClassificationSlug(classification);
+  if (!classSlug) return [];
   let url = `${MAXPREPS_BASE_URL}/${STATE}/football/${classSlug}/scores/`;
   
   if (week) {
@@ -209,7 +225,8 @@ export async function fetchScores(
     // Extract SportsEvent JSON-LD data
     const events = extractJsonLd(html, 'SportsEvent');
     
-    return events.flat().map((event: any) => {
+    return events.map((eventValue) => {
+      const event = eventValue as Record<string, any>;
       const homeTeamId = event.homeTeam?.['@id'] || '';
       const homeTeamName = event.homeTeam?.name || '';
       const awayTeamId = event.awayTeam?.['@id'] || '';
@@ -255,7 +272,8 @@ function parseEventStatus(status?: string): MaxPrepsGame['status'] {
 export async function fetchRankings(
   classification: string
 ): Promise<MaxPrepsTeam[]> {
-  const classSlug = CLASSIFICATION_MAP[classification] || 'class-6a';
+  const classSlug = getClassificationSlug(classification);
+  if (!classSlug) return [];
   const url = `${MAXPREPS_BASE_URL}/${STATE}/football/${classSlug}/rankings/`;
   
   try {
@@ -273,7 +291,8 @@ export async function fetchRankings(
     // Extract team data from Organization JSON-LD
     const orgs = extractJsonLd(html, 'SportsTeam');
     
-    return orgs.flat().map((team: any, index: number) => {
+    return orgs.map((teamValue, index: number) => {
+      const team = teamValue as Record<string, any>;
       const record = team.record || '0-0';
       const [wins, losses] = record.split('-').map(Number);
       
@@ -304,7 +323,8 @@ export async function fetchStatLeaders(
   classification: string,
   statCategory: 'passing' | 'rushing' | 'receiving' | 'tackles' | 'sacks'
 ): Promise<MaxPrepsStatLeader[]> {
-  const classSlug = CLASSIFICATION_MAP[classification] || 'class-6a';
+  const classSlug = getClassificationSlug(classification);
+  if (!classSlug) return [];
   const url = `${MAXPREPS_BASE_URL}/${STATE}/football/${classSlug}/stat-leaders/${statCategory}-yards/`;
   
   try {
@@ -337,7 +357,8 @@ export async function fetchPlayoffBracket(
   classification: string,
   division: string
 ): Promise<MaxPrepsGame[]> {
-  const classSlug = CLASSIFICATION_MAP[classification] || 'class-6a';
+  const classSlug = getClassificationSlug(classification);
+  if (!classSlug) return [];
   const divSlug = DIVISION_MAP[division] || 'division-1';
   const url = `${MAXPREPS_BASE_URL}/${STATE}/football/${classSlug}/${divSlug}/playoffs/`;
   
@@ -354,7 +375,8 @@ export async function fetchPlayoffBracket(
     const html = await response.text();
     const events = extractJsonLd(html, 'SportsEvent');
     
-    return events.flat().map((event: any) => {
+    return events.map((eventValue) => {
+      const event = eventValue as Record<string, any>;
       const homeTeamId = event.homeTeam?.['@id'] || '';
       const homeTeamName = event.homeTeam?.name || '';
       const awayTeamId = event.awayTeam?.['@id'] || '';
@@ -416,7 +438,9 @@ export async function fetchTeamSchedule(teamId: string): Promise<MaxPrepsGame[]>
     const html = await response.text();
     const events = extractJsonLd(html, 'SportsEvent');
     
-    return events.flat().map((event: any) => ({
+    return events.map((eventValue) => {
+      const event = eventValue as Record<string, any>;
+      return {
       gameId: event['@id'] || `game-${Date.now()}-${Math.random()}`,
       homeTeam: event.homeTeam?.name || '',
       homeTeamId: event.homeTeam?.['@id'] || '',
@@ -431,7 +455,8 @@ export async function fetchTeamSchedule(teamId: string): Promise<MaxPrepsGame[]>
       classification: '',
       week: 0,
       isPlayoff: false,
-    }));
+      };
+    });
   } catch (error) {
     console.error('MaxPreps schedule error:', error);
     return [];

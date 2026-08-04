@@ -42,7 +42,7 @@ export default function Header() {
         year: 'numeric',
         timeZone: 'America/Chicago',
       };
-      setCurrentTime(now.toLocaleTimeString('en-US', timeOptions) + ' CST');
+      setCurrentTime(now.toLocaleTimeString('en-US', { ...timeOptions, timeZoneName: 'short' }));
       setCurrentDate(now.toLocaleDateString('en-US', dateOptions));
     };
 
@@ -97,6 +97,8 @@ export default function Header() {
             </div>
             <AIStatusButton />
             <button
+              type="button"
+              aria-label="Refresh tracker"
               onClick={() => window.location.reload()}
               className="flex items-center gap-1 px-3 py-2 bg-orange-600 hover:bg-orange-500 rounded-lg transition-colors text-white font-semibold text-sm"
             >

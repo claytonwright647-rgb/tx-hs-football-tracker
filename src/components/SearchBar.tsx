@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { POWERHOUSE_TEAMS, CLASSIFICATIONS } from '@/lib/constants';
 
 interface SearchResult {
@@ -13,18 +13,12 @@ interface SearchResult {
 
 export default function SearchBar() {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Search logic
-  useEffect(() => {
-    if (query.length < 2) {
-      setResults([]);
-      return;
-    }
-
+  const results = useMemo(() => {
+    if (query.length < 2) return [];
     const q = query.toLowerCase();
     const matches: SearchResult[] = [];
 
@@ -53,7 +47,7 @@ export default function SearchBar() {
       }
     });
 
-    setResults(matches.slice(0, 8));
+    return matches.slice(0, 8);
   }, [query]);
 
 
@@ -86,9 +80,9 @@ export default function SearchBar() {
       {/* Results Dropdown */}
       {isOpen && results.length > 0 && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden">
-          {results.map((result, idx) => (
+          {results.map((result) => (
             <a
-              key={idx}
+              key={result.href}
               href={result.href}
               className="flex items-center gap-3 px-4 py-3 hover:bg-gray-700 transition-colors border-b border-gray-700 last:border-b-0"
             >
@@ -108,7 +102,7 @@ export default function SearchBar() {
 
       {isOpen && query.length >= 2 && results.length === 0 && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-gray-800 border border-gray-700 rounded-lg p-4 text-center text-gray-400">
-          No results found for "{query}"
+          No results found for &quot;{query}&quot;
         </div>
       )}
     </div>
