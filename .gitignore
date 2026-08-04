@@ -30,8 +30,13 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-# .env*
+# environment files never belong in source control
+.env*
+!.env.example
+
+# local databases; production data lives in the VPS state directory
+prisma/*.db
+prisma/*.db-journal
 
 # vercel
 .vercel
@@ -39,8 +44,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-.vercel
-
-.vercel
-# .env*.local

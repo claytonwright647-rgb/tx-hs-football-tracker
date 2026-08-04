@@ -3,7 +3,7 @@
 Live scores, standings, playoffs, and rankings for **Texas High School Football**.
 
 ## 🌐 Live Site
-**https://tx-hs-football-tracker.vercel.app**
+**https://txhs.wright-sports.com**
 
 ## ✨ Features
 
@@ -55,7 +55,7 @@ Live scores, standings, playoffs, and rankings for **Texas High School Football*
 - **Framework:** Next.js 16 (App Router)
 - **Styling:** Tailwind CSS
 - **Language:** TypeScript
-- **Hosting:** Vercel
+- **Hosting:** Wright Sports VPS on Vultr
 - **Data:** API routes with caching
 
 ## 🚀 Development
