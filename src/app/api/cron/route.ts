@@ -12,7 +12,7 @@ import {
 import { isAuthorizedCronRequest } from '@/lib/cron-auth';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60; // 60 second timeout for cron
+export const maxDuration = 60
 
 // ESPN API endpoints for Texas HS Football
 const ESPN_BASE = 'https://site.api.espn.com/apis/site/v2/sports/football';
@@ -134,8 +134,8 @@ export async function GET(request: Request) {
   const startTime = Date.now();
   
   try {
-    // Keep the existing Vercel token valid during the bounded handoff while
-    // accepting a separate destination-only token for Cloud Hermes.
+    // Accept the protected VPS credential and the legacy environment variable
+    // during a bounded credential transition.
     const authHeader = request.headers.get('authorization');
     if (!isAuthorizedCronRequest(authHeader)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
