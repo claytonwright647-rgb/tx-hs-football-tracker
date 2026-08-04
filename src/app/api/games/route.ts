@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
-import { Game, Team, LiveGame } from '@/lib/types';
+import { Team, LiveGame } from '@/lib/types';
 import { fetchScores, fetchPlayoffBracket, getUILClassifications, MaxPrepsGame } from '@/lib/maxpreps';
+import {
+  getCurrentPhase,
+  getPhaseConfig,
+  shouldFetchLiveData,
+  type SeasonPhase,
+} from '@/lib/seasonIntelligence';
 
 // Cache for games data
 let gamesCache: { games: LiveGame[]; timestamp: number } | null = null;
@@ -58,7 +64,7 @@ function convertToLiveGame(mpGame: MaxPrepsGame): LiveGame {
 }
 
 // Fetch all games across classifications
-async function fetchAllGames(): Promise<LiveGame[]> {
+async function fetchAllGames(phase: SeasonPhase): Promise<LiveGame[]> {
   const classifications = getUILClassifications();
   const allGames: LiveGame[] = [];
   
@@ -74,17 +80,19 @@ async function fetchAllGames(): Promise<LiveGame[]> {
   });
 
   // Fetch playoff brackets for each classification
-  const playoffPromises = classifications.map(async (classification) => {
-    const [baseClass, div] = classification.split(' ');
-    const division = div === 'D1' ? 'Division I' : 'Division II';
-    try {
-      const games = await fetchPlayoffBracket(baseClass, division);
-      return games.map(g => convertToLiveGame({ ...g, classification }));
-    } catch (e) {
-      console.error(`Error fetching ${classification} playoffs:`, e);
-      return [];
-    }
-  });
+  const playoffPromises = ['playoffs', 'state_championships'].includes(phase)
+    ? classifications.map(async (classification) => {
+        const [baseClass, div] = classification.split(' ');
+        const division = div === 'D1' ? 'Division I' : 'Division II';
+        try {
+          const games = await fetchPlayoffBracket(baseClass, division);
+          return games.map(g => convertToLiveGame({ ...g, classification }));
+        } catch (e) {
+          console.error(`Error fetching ${classification} playoffs:`, e);
+          return [];
+        }
+      })
+    : [];
 
   const [scoreResults, playoffResults] = await Promise.all([
     Promise.all(scorePromises),
@@ -111,6 +119,22 @@ export async function GET(request: Request) {
   const forceRefresh = searchParams.get('refresh') === 'true';
 
   try {
+    const now = new Date();
+    const phase = getCurrentPhase(now);
+
+    if (!shouldFetchLiveData(now)) {
+      return NextResponse.json({
+        success: true,
+        count: 0,
+        games: [],
+        timestamp: now.toISOString(),
+        cached: false,
+        sourceStatus: 'not_scheduled_for_current_phase',
+        phase,
+        message: `Live score polling is not scheduled during ${getPhaseConfig(phase).displayName}. Published schedules remain available.`,
+      });
+    }
+
     // Check cache
     if (!forceRefresh && gamesCache && Date.now() - gamesCache.timestamp < CACHE_TTL) {
       let games = [...gamesCache.games];
@@ -136,7 +160,7 @@ export async function GET(request: Request) {
     }
 
     // Fetch fresh data
-    const allGames = await fetchAllGames();
+    const allGames = await fetchAllGames(phase);
     
     // Update cache
     gamesCache = {

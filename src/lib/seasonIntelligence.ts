@@ -354,8 +354,8 @@ export function getRefreshInterval(): number {
 }
 
 // Check if we should be actively fetching live game data
-export function shouldFetchLiveData(): boolean {
-  const phase = getCurrentPhase();
+export function shouldFetchLiveData(date?: Date): boolean {
+  const phase = getCurrentPhase(date);
   return ['scrimmages', 'regular_season', 'playoffs', 'state_championships'].includes(phase);
 }
 
