@@ -57,10 +57,11 @@ export interface Game {
   venue: string;
   city: string;
   date: string;
-  time: string;
+  time?: string;
   broadcast?: string;
-  isDistrictGame: boolean;
+  isDistrictGame?: boolean;
   week?: number;
+  sourceClassifications?: string[];
 }
 
 export interface LiveGame extends Game {

@@ -27,8 +27,7 @@ function convertToLiveGame(mpGame: MaxPrepsGame): LiveGame {
     mascot: '',
     city: mpGame.city || '',
     school: mpGame.homeTeam,
-    classification: baseClassification,
-    division,
+    classification: '',
     district: '',
     record: '',
     logo: mpGame.homeTeamLogo || undefined,
@@ -40,8 +39,7 @@ function convertToLiveGame(mpGame: MaxPrepsGame): LiveGame {
     mascot: '',
     city: '',
     school: mpGame.awayTeam,
-    classification: baseClassification,
-    division,
+    classification: '',
     district: '',
     record: '',
     logo: mpGame.awayTeamLogo || undefined,
@@ -53,6 +51,8 @@ function convertToLiveGame(mpGame: MaxPrepsGame): LiveGame {
   else if (mpGame.status === 'final') status = 'final';
   else if (mpGame.status === 'postponed') status = 'postponed';
 
+  const hasPublishedTime = mpGame.startTime.includes('T');
+
   return {
     id: mpGame.gameId,
     homeTeam,
@@ -62,15 +62,53 @@ function convertToLiveGame(mpGame: MaxPrepsGame): LiveGame {
     status,
     classification: baseClassification,
     division,
+    sourceClassifications: [mpGame.classification],
     isPlayoff: mpGame.isPlayoff,
     playoffRound: mpGame.playoffRound,
     venue: mpGame.venue,
     city: mpGame.city,
     date: mpGame.startTime.split('T')[0],
-    time: mpGame.startTime,
-    isDistrictGame: !mpGame.isPlayoff,
+    time: hasPublishedTime ? mpGame.startTime : undefined,
     week: mpGame.week,
   };
+}
+
+function mergeSourceGames(games: LiveGame[]): LiveGame[] {
+  const gamesById = new Map<string, LiveGame>();
+  const statusPriority: Record<LiveGame['status'], number> = {
+    scheduled: 0,
+    postponed: 1,
+    cancelled: 1,
+    in_progress: 2,
+    halftime: 2,
+    final: 3,
+  };
+
+  for (const game of games) {
+    const current = gamesById.get(game.id);
+    if (!current) {
+      gamesById.set(game.id, game);
+      continue;
+    }
+
+    const sourceClassifications = Array.from(new Set([
+      ...(current.sourceClassifications || []),
+      ...(game.sourceClassifications || []),
+    ]));
+    if (statusPriority[game.status] > statusPriority[current.status]) {
+      gamesById.set(game.id, { ...game, sourceClassifications });
+    } else {
+      current.sourceClassifications = sourceClassifications;
+    }
+  }
+
+  return Array.from(gamesById.values());
+}
+
+function matchesClassification(game: LiveGame, classification: string): boolean {
+  return game.classification === classification || Boolean(
+    game.sourceClassifications?.some((source) => source === classification || source.startsWith(`${classification} `)),
+  );
 }
 
 // Fetch all games across classifications
@@ -115,9 +153,7 @@ async function fetchAllGames(phase: SeasonPhase): Promise<LiveGame[]> {
 
   // Remove duplicates by gameId
   const validGames = allGames.filter((game) => game.homeTeam.name && game.awayTeam.name && game.date);
-  const uniqueGames = Array.from(
-    new Map(validGames.map(g => [g.id, g])).values()
-  );
+  const uniqueGames = mergeSourceGames(validGames);
 
   return uniqueGames;
 }
@@ -154,7 +190,7 @@ export async function GET(request: Request) {
       
       // Apply filters
       if (classification) {
-        games = games.filter((g) => g.classification === classification);
+        games = games.filter((g) => matchesClassification(g, classification));
       }
       if (status) {
         games = games.filter((g) => g.status === status);
@@ -192,7 +228,7 @@ export async function GET(request: Request) {
 
     // Apply filters
     if (classification) {
-      games = games.filter((g) => g.classification === classification);
+      games = games.filter((g) => matchesClassification(g, classification));
     }
     if (status) {
       games = games.filter((g) => g.status === status);

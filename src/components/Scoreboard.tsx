@@ -95,18 +95,23 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
     setSelectedGame(null);
   };
 
-  // Filter games based on classification
+  const hasClassification = (game: Game | LiveGame, classId: string) =>
+    game.classification === classId || Boolean(
+      game.sourceClassifications?.some((source) => source === classId || source.startsWith(`${classId} `)),
+    );
+
+  // Filter games based on classifications published for either participant.
   const filteredGames = activeFilter === 'all' 
     ? games 
-    : games.filter(g => g.classification === activeFilter);
+    : games.filter(g => hasClassification(g, activeFilter));
 
   // Count live games per classification
   const getLiveCount = (classId: string) => 
-    games.filter(g => g.classification === classId && 
+    games.filter(g => hasClassification(g, classId) &&
       (g.status === 'in_progress' || g.status === 'halftime')).length;
 
   const getGamesCount = (classId: string) =>
-    games.filter(g => g.classification === classId).length;
+    games.filter(g => hasClassification(g, classId)).length;
 
   // Total live games count
   const totalLiveGames = games.filter(g => 
@@ -272,7 +277,8 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
           venue: selectedGame.venue,
           date: selectedGame.date,
           time: selectedGame.time,
-          classification: `${selectedGame.classification}${selectedGame.division ? `-${selectedGame.division}` : ''}`,
+          classification: selectedGame.sourceClassifications?.join(' · ')
+            || `${selectedGame.classification}${selectedGame.division ? `-${selectedGame.division}` : ''}`,
           id: selectedGame.id,
           situation: (selectedGame as LiveGame).situation,
         } : null}

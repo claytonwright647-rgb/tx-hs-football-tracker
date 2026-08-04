@@ -66,11 +66,18 @@ test('missing live field position never creates a midfield ball marker', () => {
 test('official feed games normalize into working filters without fabricated scores', () => {
   assert.match(gamesApi, /const \[baseClassification, divisionCode\]/);
   assert.match(gamesApi, /classification: baseClassification/);
+  assert.match(gamesApi, /sourceClassifications: \[mpGame\.classification\]/);
+  assert.match(gamesApi, /mergeSourceGames/);
+  assert.match(gamesApi, /matchesClassification/);
   assert.match(gamesApi, /homeScore: mpGame\.homeScore \?\? undefined/);
   assert.match(gamesApi, /schedule_source_empty/);
   assert.match(maxpreps, /item\['@graph'\]/);
   assert.match(maxpreps, /function getClassificationSlug/);
   assert.match(maxpreps, /return match\[2\] \? `class-\$\{base\}-division-\$\{match\[2\]\}`/);
+  assert.match(maxpreps, /SCOREBOARD_DIVISIONS/);
+  assert.match(maxpreps, /statedivisionid/);
+  assert.match(maxpreps, /parseMaxPrepsScoreboard/);
+  assert.doesNotMatch(maxpreps, /football\/\$\{classSlug\}\/scores/);
   assert.doesNotMatch(maxpreps, /CLASSIFICATION_MAP\[classification\] \|\| 'class-6a'/);
 });
 

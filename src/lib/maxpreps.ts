@@ -157,6 +157,167 @@ const DIVISION_MAP: Record<string, string> = {
   'D2': 'division-2',
 };
 
+interface ScoreboardDivision {
+  name: string;
+  stateDivisionId: string;
+}
+
+// MaxPreps exposes UIL scoreboards through stable state-division identifiers.
+// These identifiers and names come from the division selector on the official
+// Texas University Interscholastic League football scoreboard.
+const SCOREBOARD_DIVISIONS: Record<string, ScoreboardDivision> = {
+  '6A': { name: 'division-6a', stateDivisionId: '75abb178-ba1e-48f0-af71-04013355a7f8' },
+  '6A D1': { name: 'division-6a', stateDivisionId: '75abb178-ba1e-48f0-af71-04013355a7f8' },
+  '6A D2': { name: 'division-6a', stateDivisionId: '75abb178-ba1e-48f0-af71-04013355a7f8' },
+  '5A D1': { name: 'division-5a-1', stateDivisionId: '743a7860-f82c-4a97-a8a0-5b7bae3ce060' },
+  '5A D2': { name: 'division-5a-2', stateDivisionId: '18530cc7-b630-4123-9090-09b864fdc92a' },
+  '4A D1': { name: 'division-4a-1', stateDivisionId: '967de445-3a77-4490-9fe4-50565a5c2fe1' },
+  '4A D2': { name: 'division-4a-2', stateDivisionId: '28e7e0a2-8240-4363-8f54-a422abc29f14' },
+  '3A D1': { name: 'division-3a-1', stateDivisionId: '5b093154-2589-404c-a324-7a21bc30283d' },
+  '3A D2': { name: 'division-3a-2', stateDivisionId: '9edffdd7-8638-41c8-ad2c-0854b4cf6ccd' },
+  '2A D1': { name: 'division-2a-1', stateDivisionId: '9a2df3c4-3e42-4f78-9260-091a949d9692' },
+  '2A D2': { name: 'division-2a-2', stateDivisionId: 'aa7bbee2-8cb8-43a0-b586-c4b3ef88cb75' },
+  '1A D1': { name: 'division-1a-6-man-1', stateDivisionId: 'aeae15f7-798e-4385-b130-256db10f448a' },
+  '1A D2': { name: 'division-1a-6-man-2', stateDivisionId: '0da3e2ac-f28f-4d2e-b601-bbad90d21e3d' },
+};
+
+const SCOREBOARD_SPORT_ID = '2286cd80-c46d-4739-8dd1-92a67ca8daa7';
+
+function decodeHtml(value: string): string {
+  return value
+    .replace(/&#(\d+);/g, (_, code: string) => String.fromCodePoint(Number(code)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, code: string) => String.fromCodePoint(Number.parseInt(code, 16)))
+    .replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>');
+}
+
+function textContent(value: string): string {
+  return decodeHtml(value.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
+}
+
+function teamName(value: string): string {
+  return textContent(value).replace(/^\(#\d+\)\s*/, '');
+}
+
+function attribute(value: string, name: string): string {
+  const match = value.match(new RegExp(`${name}=["']([^"']*)["']`, 'i'));
+  return match ? decodeHtml(match[1]) : '';
+}
+
+function chicagoOffset(year: number, month: number, day: number, hour: number, minute: number): string {
+  const guess = new Date(Date.UTC(year, month - 1, day, hour, minute));
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Chicago',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(guess);
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  const representedAsUtc = Date.UTC(
+    Number(values.year),
+    Number(values.month) - 1,
+    Number(values.day),
+    Number(values.hour),
+    Number(values.minute),
+  );
+  const offsetMinutes = Math.round((representedAsUtc - guess.getTime()) / 60000);
+  const sign = offsetMinutes >= 0 ? '+' : '-';
+  const absolute = Math.abs(offsetMinutes);
+  return `${sign}${String(Math.floor(absolute / 60)).padStart(2, '0')}:${String(absolute % 60).padStart(2, '0')}`;
+}
+
+function scheduledStart(gameUrl: string, details: string): string {
+  const dateMatch = gameUrl.match(/\/(\d{1,2})-(\d{1,2})-(\d{4})\//);
+  if (!dateMatch) return '';
+  const [, monthValue, dayValue, yearValue] = dateMatch;
+  const date = `${yearValue}-${monthValue.padStart(2, '0')}-${dayValue.padStart(2, '0')}`;
+  const timeMatch = details.match(/\b(1[0-2]|[1-9])(?::([0-5]\d))?\s*([ap])(?:m)?\b/i);
+  if (!timeMatch) return date;
+
+  const year = Number(yearValue);
+  const month = Number(monthValue);
+  const day = Number(dayValue);
+  const minute = Number(timeMatch[2] || '0');
+  const meridiem = timeMatch[3].toLowerCase();
+  let hour = Number(timeMatch[1]) % 12;
+  if (meridiem === 'p') hour += 12;
+  const offset = chicagoOffset(year, month, day, hour, minute);
+  return `${date}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00${offset}`;
+}
+
+function scoreboardStatus(boxAttributes: string, details: string): MaxPrepsGame['status'] {
+  const state = attribute(boxAttributes, 'data-contest-state').toLowerCase();
+  const live = attribute(boxAttributes, 'data-contest-live') === '1';
+  const label = details.toLowerCase();
+  if (/postpon|cancel/.test(`${state} ${label}`)) return 'postponed';
+  if (live || /live|inprogress|in-progress/.test(state)) return 'live';
+  if (/final|postgame|complete|completed/.test(`${state} ${label}`)) return 'final';
+  return 'scheduled';
+}
+
+/** Parse the sourced contest cards rendered by the official MaxPreps scoreboard. */
+export function parseMaxPrepsScoreboard(
+  html: string,
+  classification: string,
+  week = 0,
+): MaxPrepsGame[] {
+  const games: MaxPrepsGame[] = [];
+  const contestPattern = /<li\s+class=["']c["'][^>]*data-teams=["']([^"']*)["'][^>]*data-contest-id=["']([^"']+)["'][^>]*>\s*<div\s+class=["']contest-box-item["']([^>]*)>\s*<a\s+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>\s*<\/div>\s*<\/li>/gi;
+  let contestMatch: RegExpExecArray | null;
+
+  while ((contestMatch = contestPattern.exec(html)) !== null) {
+    const [, teamIdsValue, gameId, boxAttributes, encodedUrl, cardHtml] = contestMatch;
+    const gameUrl = decodeHtml(encodedUrl);
+    const teamIds = teamIdsValue.split(','); // MaxPreps stores home,away IDs.
+    const teams = Array.from(cardHtml.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)).map((match) => {
+      const item = match[1];
+      const nameMatch = item.match(/<div\s+class=["'][^"']*\bname\b[^"']*["'][^>]*>([\s\S]*?)<\/div>/i);
+      const scoreMatch = item.match(/<div\s+class=["'][^"']*\bscore\b[^"']*["'][^>]*>([\s\S]*?)<\/div>/i);
+      const imageMatch = item.match(/data-lazy-image=["']([^"']+)["']/i);
+      const parsedScore = scoreMatch ? Number.parseInt(textContent(scoreMatch[1]), 10) : Number.NaN;
+      return {
+        name: nameMatch ? teamName(nameMatch[1]) : '',
+        score: Number.isFinite(parsedScore) ? parsedScore : null,
+        logo: imageMatch ? decodeHtml(imageMatch[1]) : null,
+      };
+    });
+
+    // Contest cards render away first and home second. Ignore incomplete cards.
+    if (teams.length < 2 || !teams[0].name || !teams[1].name) continue;
+    const detailsMatch = cardHtml.match(/<div\s+class=["'][^"']*\bdetails\b[^"']*["'][^>]*>([\s\S]*?)<\/div>/i);
+    const details = detailsMatch ? textContent(detailsMatch[1]) : '';
+    const startTime = scheduledStart(gameUrl, details);
+    if (!startTime) continue;
+
+    games.push({
+      gameId,
+      homeTeam: teams[1].name,
+      homeTeamId: teamIds[0] || '',
+      homeTeamLogo: teams[1].logo,
+      awayTeam: teams[0].name,
+      awayTeamId: teamIds[1] || '',
+      awayTeamLogo: teams[0].logo,
+      homeScore: teams[1].score,
+      awayScore: teams[0].score,
+      status: scoreboardStatus(boxAttributes, details),
+      startTime,
+      venue: '',
+      city: '',
+      classification,
+      week,
+      isPlayoff: false,
+    });
+  }
+
+  return games;
+}
+
 // Parse MaxPreps JSON-LD data embedded in HTML
 function extractJsonLd(html: string, type: string): unknown[] {
   const regex = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
@@ -198,13 +359,14 @@ export async function fetchScores(
   classification: string,
   week?: number
 ): Promise<MaxPrepsGame[]> {
-  const classSlug = getClassificationSlug(classification);
-  if (!classSlug) return [];
-  let url = `${MAXPREPS_BASE_URL}/${STATE}/football/${classSlug}/scores/`;
-  
-  if (week) {
-    url += `week-${week}/`;
-  }
+  const division = SCOREBOARD_DIVISIONS[classification];
+  if (!division) return [];
+  const url = new URL('/list/schedules_scores.aspx', MAXPREPS_BASE_URL);
+  url.searchParams.set('gendersport', 'boys,football');
+  url.searchParams.set('name', division.name);
+  url.searchParams.set('ssid', SCOREBOARD_SPORT_ID);
+  url.searchParams.set('state', STATE);
+  url.searchParams.set('statedivisionid', division.stateDivisionId);
   
   try {
     const response = await fetch(url, {
@@ -221,36 +383,7 @@ export async function fetchScores(
     }
 
     const html = await response.text();
-    
-    // Extract SportsEvent JSON-LD data
-    const events = extractJsonLd(html, 'SportsEvent');
-    
-    return events.map((eventValue) => {
-      const event = eventValue as Record<string, any>;
-      const homeTeamId = event.homeTeam?.['@id'] || '';
-      const homeTeamName = event.homeTeam?.name || '';
-      const awayTeamId = event.awayTeam?.['@id'] || '';
-      const awayTeamName = event.awayTeam?.name || '';
-      
-      return {
-        gameId: event['@id'] || `mp-${Date.now()}-${Math.random()}`,
-        homeTeam: homeTeamName,
-        homeTeamId,
-        homeTeamLogo: event.homeTeam?.logo || event.homeTeam?.image?.url || getTeamLogoUrl(homeTeamId, homeTeamName),
-        awayTeam: awayTeamName,
-        awayTeamId,
-        awayTeamLogo: event.awayTeam?.logo || event.awayTeam?.image?.url || getTeamLogoUrl(awayTeamId, awayTeamName),
-        homeScore: event.homeTeam?.score ?? null,
-        awayScore: event.awayTeam?.score ?? null,
-        status: parseEventStatus(event.eventStatus),
-        startTime: event.startDate || '',
-        venue: event.location?.name || '',
-        city: event.location?.address?.addressLocality || '',
-        classification,
-        week: week || 0,
-        isPlayoff: false,
-      };
-    });
+    return parseMaxPrepsScoreboard(html, classification, week || 0);
   } catch (error) {
     console.error('MaxPreps fetch error:', error);
     return [];
@@ -467,7 +600,9 @@ export async function fetchTeamSchedule(teamId: string): Promise<MaxPrepsGame[]>
  * Get all Texas UIL classifications
  */
 export function getUILClassifications(): string[] {
-  return ['6A D1', '6A D2', '5A D1', '5A D2', '4A D1', '4A D2', '3A D1', '3A D2', '2A D1', '2A D2', '1A D1', '1A D2'];
+  // MaxPreps publishes 6A as one regular-season division. It must only be
+  // fetched once; duplicating it as D1/D2 would duplicate every 6A game.
+  return ['6A', '5A D1', '5A D2', '4A D1', '4A D2', '3A D1', '3A D2', '2A D1', '2A D2', '1A D1', '1A D2'];
 }
 
 /**

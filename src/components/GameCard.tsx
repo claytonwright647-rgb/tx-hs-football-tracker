@@ -23,7 +23,7 @@ function gameState(game: Game | LiveGame) {
   if (final) return { live, final, label: 'FINAL' };
   if (game.status === 'postponed') return { live, final, label: 'POSTPONED' };
   if (game.status === 'cancelled') return { live, final, label: 'CANCELLED' };
-  return { live, final, label: game.time || 'SCHEDULED' };
+  return { live, final, label: 'SCHEDULED' };
 }
 
 function score(value: number | undefined, showScore: boolean) {
@@ -32,23 +32,27 @@ function score(value: number | undefined, showScore: boolean) {
 
 function scheduleLine(game: Game | LiveGame, showScore: boolean) {
   const raw = game.time || game.date;
-  const parsed = raw ? new Date(raw.includes('T') ? raw : `${raw}T12:00:00-05:00`) : null;
+  const hasPublishedTime = Boolean(game.time?.includes('T'));
+  const parsed = raw ? new Date(hasPublishedTime ? raw : `${game.date}T12:00:00-05:00`) : null;
   const formatted = parsed && !Number.isNaN(parsed.getTime())
     ? parsed.toLocaleString('en-US', {
         weekday: 'short',
         month: 'short',
         day: 'numeric',
-        hour: showScore ? undefined : 'numeric',
-        minute: showScore ? undefined : '2-digit',
+        hour: showScore || !hasPublishedTime ? undefined : 'numeric',
+        minute: showScore || !hasPublishedTime ? undefined : '2-digit',
         timeZone: 'America/Chicago',
-        timeZoneName: showScore ? undefined : 'short',
+        timeZoneName: showScore || !hasPublishedTime ? undefined : 'short',
       })
     : game.date;
-  return formatted || 'Schedule time unavailable';
+  if (!formatted) return 'Schedule time unavailable';
+  return !showScore && !hasPublishedTime ? `${formatted} · Time TBA` : formatted;
 }
 
 export default function GameCard({ game, onClick }: GameCardProps) {
   const classification = CLASSIFICATIONS.find((item) => item.id === game.classification);
+  const classificationLabel = game.sourceClassifications?.join(' · ')
+    || `${game.classification}${game.division ? ` ${game.division.replace('Division ', 'D')}` : ''}`;
   const state = gameState(game);
   const showScore = state.live || state.final;
   const situation = (game as LiveGame).situation;
@@ -69,7 +73,7 @@ export default function GameCard({ game, onClick }: GameCardProps) {
       <div className="flex min-h-11 items-center justify-between border-b border-gray-800 bg-gray-950/70 px-4 py-2">
         <div className="flex min-w-0 items-center gap-2">
           <span className={`rounded-full px-2 py-1 text-[11px] font-black uppercase tracking-wider ${classification?.bgColor || 'bg-orange-950/40'} ${classification?.textColor || 'text-orange-300'}`}>
-            {game.classification}{game.division ? ` ${game.division.replace('Division ', 'D')}` : ''}
+            {classificationLabel}
           </span>
           {game.isPlayoff && (
             <span className="truncate text-[11px] font-semibold uppercase tracking-wider text-yellow-300">
