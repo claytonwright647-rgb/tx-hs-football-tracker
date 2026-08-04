@@ -9,9 +9,19 @@ import {
   type SeasonPhase,
 } from '@/lib/seasonIntelligence';
 
-// Cache for games data
-let gamesCache: { games: LiveGame[]; timestamp: number } | null = null;
+// Cache each browsed date independently so navigating the schedule cannot
+// serve a different day's games from the one-minute live cache.
+const gamesCache = new Map<string, { games: LiveGame[]; timestamp: number }>();
 const CACHE_TTL = 60 * 1000; // 1 minute cache for live updates
+
+function isValidScheduleDate(value: string | null): value is string {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split('-').map(Number);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  return parsed.getUTCFullYear() === year
+    && parsed.getUTCMonth() === month - 1
+    && parsed.getUTCDate() === day;
+}
 
 // Convert MaxPreps game to our LiveGame format
 function convertToLiveGame(mpGame: MaxPrepsGame): LiveGame {
@@ -112,14 +122,14 @@ function matchesClassification(game: LiveGame, classification: string): boolean 
 }
 
 // Fetch all games across classifications
-async function fetchAllGames(phase: SeasonPhase): Promise<LiveGame[]> {
+async function fetchAllGames(phase: SeasonPhase, requestedDate?: string): Promise<LiveGame[]> {
   const classifications = getUILClassifications();
   const allGames: LiveGame[] = [];
   
   // Fetch regular season scores for each classification
   const scorePromises = classifications.map(async (classification) => {
     try {
-      const games = await fetchScores(classification);
+      const games = await fetchScores(classification, undefined, requestedDate);
       return games.map(g => convertToLiveGame(g));
     } catch (e) {
       console.error(`Error fetching ${classification} scores:`, e);
@@ -153,7 +163,11 @@ async function fetchAllGames(phase: SeasonPhase): Promise<LiveGame[]> {
 
   // Remove duplicates by gameId
   const validGames = allGames.filter((game) => game.homeTeam.name && game.awayTeam.name && game.date);
-  const uniqueGames = mergeSourceGames(validGames);
+  const uniqueGames = mergeSourceGames(validGames).sort((first, second) => {
+    const firstTime = new Date(first.time || `${first.date}T12:00:00-06:00`).getTime();
+    const secondTime = new Date(second.time || `${second.date}T12:00:00-06:00`).getTime();
+    return firstTime - secondTime || first.awayTeam.name.localeCompare(second.awayTeam.name);
+  });
 
   return uniqueGames;
 }
@@ -164,6 +178,19 @@ export async function GET(request: Request) {
   const status = searchParams.get('status');
   const isPlayoff = searchParams.get('playoff');
   const forceRefresh = searchParams.get('refresh') === 'true';
+  const dateParam = searchParams.get('date');
+
+  if (dateParam && !isValidScheduleDate(dateParam)) {
+    return NextResponse.json({
+      success: false,
+      error: 'Invalid schedule date',
+      message: 'Use a real calendar date in YYYY-MM-DD format.',
+      games: [],
+    }, { status: 400 });
+  }
+
+  const requestedDate = dateParam || undefined;
+  const cacheKey = requestedDate || 'next-published';
 
   try {
     const now = new Date();
@@ -185,8 +212,9 @@ export async function GET(request: Request) {
     }
 
     // Check cache
-    if (!forceRefresh && gamesCache && Date.now() - gamesCache.timestamp < CACHE_TTL) {
-      let games = [...gamesCache.games];
+    const cachedResult = gamesCache.get(cacheKey);
+    if (!forceRefresh && cachedResult && Date.now() - cachedResult.timestamp < CACHE_TTL) {
+      let games = [...cachedResult.games];
       
       // Apply filters
       if (classification) {
@@ -203,8 +231,10 @@ export async function GET(request: Request) {
         success: true,
         count: games.length,
         games,
-        timestamp: new Date(gamesCache.timestamp).toISOString(),
+        timestamp: new Date(cachedResult.timestamp).toISOString(),
         cached: true,
+        requestedDate: requestedDate || null,
+        scheduleDate: games[0]?.date || requestedDate || null,
         sourceStatus: games.length > 0 ? 'available' : (livePollingActive ? 'current_source_empty' : 'schedule_source_empty'),
         phase,
         message: games.length > 0
@@ -216,13 +246,13 @@ export async function GET(request: Request) {
     }
 
     // Fetch fresh data
-    const allGames = await fetchAllGames(phase);
+    const allGames = await fetchAllGames(phase, requestedDate);
     
     // Update cache
-    gamesCache = {
+    gamesCache.set(cacheKey, {
       games: allGames,
       timestamp: Date.now(),
-    };
+    });
 
     let games = [...allGames];
 
@@ -243,6 +273,8 @@ export async function GET(request: Request) {
       games,
       timestamp: new Date().toISOString(),
       cached: false,
+      requestedDate: requestedDate || null,
+      scheduleDate: games[0]?.date || requestedDate || null,
       sourceStatus: games.length > 0 ? 'available' : (livePollingActive ? 'current_source_empty' : 'schedule_source_empty'),
       phase,
       message: games.length > 0

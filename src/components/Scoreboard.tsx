@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { CalendarDays, ChevronLeft, ChevronRight, CircleCheckBig, Clock3, Layers3, Radio } from 'lucide-react';
 import { CLASSIFICATIONS } from '@/lib/constants';
 import { Game, LiveGame } from '@/lib/types';
 import ClassificationCard from './ClassificationCard';
@@ -19,6 +20,37 @@ interface GamesApiResponse {
   phase?: string;
   message?: string;
   error?: string;
+  requestedDate?: string | null;
+  scheduleDate?: string | null;
+}
+
+function chicagoToday(): string {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Chicago',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date());
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+function shiftScheduleDate(date: string, amount: number): string {
+  const parsed = new Date(`${date}T12:00:00Z`);
+  parsed.setUTCDate(parsed.getUTCDate() + amount);
+  return parsed.toISOString().slice(0, 10);
+}
+
+function scheduleDateLabel(date: string | null): string {
+  if (!date) return 'Finding the next published slate';
+  const parsed = new Date(`${date}T12:00:00-06:00`);
+  return parsed.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'America/Chicago',
+  });
 }
 
 export default function Scoreboard({ selectedClassification }: ScoreboardProps) {
@@ -33,6 +65,8 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
   const [sourceStatus, setSourceStatus] = useState<string | null>(null);
   const [phase, setPhase] = useState<string | null>(null);
   const [sourceMessage, setSourceMessage] = useState<string | null>(null);
+  const [browseDate, setBrowseDate] = useState<string | null>(null);
+  const [sourceScheduleDate, setSourceScheduleDate] = useState<string | null>(null);
 
   // Fetch games from API
   const fetchGames = useCallback(async () => {
@@ -40,7 +74,8 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
       setLoading(true);
       setError(null);
       
-      const response = await fetch('/api/games', { cache: 'no-store' });
+      const query = browseDate ? `?date=${encodeURIComponent(browseDate)}` : '';
+      const response = await fetch(`/api/games${query}`, { cache: 'no-store' });
       
       if (!response.ok) {
         throw new Error(`Failed to fetch games: ${response.status}`);
@@ -54,6 +89,7 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
         setSourceStatus(data.sourceStatus || 'available');
         setPhase(data.phase || null);
         setSourceMessage(data.message || null);
+        setSourceScheduleDate(data.scheduleDate || browseDate);
       } else {
         throw new Error(data.error || 'The games source did not return a usable response');
       }
@@ -66,7 +102,7 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [browseDate]);
 
   // Initial fetch
   useEffect(() => {
@@ -117,6 +153,21 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
   const totalLiveGames = games.filter(g => 
     g.status === 'in_progress' || g.status === 'halftime'
   ).length;
+  const scheduledGames = games.filter((game) => game.status === 'scheduled').length;
+  const finalGames = games.filter((game) => game.status === 'final').length;
+  const displayScheduleDate = browseDate || sourceScheduleDate;
+
+  const moveSchedule = (amount: number) => {
+    if (!displayScheduleDate) return;
+    setBrowseDate(shiftScheduleDate(displayScheduleDate, amount));
+  };
+
+  const glanceCards = [
+    { label: 'Published', value: games.length, detail: 'Unique sourced games', icon: Layers3, color: 'text-orange-300' },
+    { label: 'Scheduled', value: scheduledGames, detail: 'Kickoffs ahead', icon: Clock3, color: 'text-blue-300' },
+    { label: 'Live now', value: totalLiveGames, detail: totalLiveGames ? 'Games in progress' : 'None in progress', icon: Radio, color: totalLiveGames ? 'text-red-300' : 'text-gray-300' },
+    { label: 'Final', value: finalGames, detail: 'Completed games', icon: CircleCheckBig, color: 'text-green-300' },
+  ];
 
   return (
     <div className="space-y-6">
@@ -137,6 +188,54 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
           </button>
         </div>
       )}
+
+      <section aria-labelledby="schedule-browser-title" className="overflow-hidden rounded-2xl border border-orange-500/25 bg-gradient-to-br from-gray-900 to-gray-950 shadow-xl">
+        <div className="flex flex-col gap-4 border-b border-gray-800 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="rounded-xl bg-orange-500/15 p-2 text-orange-300"><CalendarDays className="h-5 w-5" /></span>
+            <div className="min-w-0">
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-orange-300">
+                {browseDate ? 'Selected game date' : 'Next published slate'}
+              </p>
+              <h2 id="schedule-browser-title" aria-live="polite" className="truncate text-lg font-black text-white sm:text-xl">
+                {scheduleDateLabel(displayScheduleDate)}
+              </h2>
+              <p className="mt-0.5 text-xs text-gray-500">MaxPreps UIL schedule · times shown in Central Time</p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button type="button" onClick={() => moveSchedule(-1)} disabled={!displayScheduleDate || loading} aria-label="Previous schedule date" className="rounded-lg border border-gray-700 bg-gray-800 p-2 text-gray-200 transition hover:border-orange-400 hover:text-white disabled:cursor-not-allowed disabled:opacity-40">
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button type="button" onClick={() => setBrowseDate(chicagoToday())} disabled={loading} className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-xs font-bold text-gray-200 transition hover:border-orange-400 hover:text-white disabled:opacity-40">
+              Today
+            </button>
+            {browseDate && (
+              <button type="button" onClick={() => setBrowseDate(null)} disabled={loading} className="rounded-lg bg-orange-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-orange-500 disabled:opacity-40">
+                Next published
+              </button>
+            )}
+            <button type="button" onClick={() => moveSchedule(1)} disabled={!displayScheduleDate || loading} aria-label="Next schedule date" className="rounded-lg border border-gray-700 bg-gray-800 p-2 text-gray-200 transition hover:border-orange-400 hover:text-white disabled:cursor-not-allowed disabled:opacity-40">
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-px bg-gray-800 md:grid-cols-4">
+          {glanceCards.map((item) => (
+            <div key={item.label} className="bg-gray-950/90 px-4 py-3">
+              <div className="flex items-center gap-2">
+                <item.icon className={`h-4 w-4 ${item.color}`} />
+                <span className="text-xs font-bold uppercase tracking-wider text-gray-400">{item.label}</span>
+              </div>
+              <p className="mt-1 text-2xl font-black tabular-nums text-white">{loading ? '—' : item.value}</p>
+              <p className="text-[11px] text-gray-500">{item.detail}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Classification Cards Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {CLASSIFICATIONS.map((classification) => (

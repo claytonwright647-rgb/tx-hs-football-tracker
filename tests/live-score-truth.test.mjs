@@ -21,15 +21,30 @@ const gamesApi = read('src/app/api/games/route.ts');
 const maxpreps = read('src/lib/maxpreps.ts');
 const aiStatusButton = read('src/components/AIStatusButton.tsx');
 const brainApi = read('src/app/api/brain-ai/route.ts');
+const eloColumn = read('src/components/ELOStandingsColumn.tsx');
 
 test('home and scoreboard routes render the canonical live scoreboard', () => {
   assert.match(home, /<Scoreboard\s*\/>/);
   assert.match(scoreboardPage, /<Scoreboard\s*\/>/);
   assert.doesNotMatch(scoreboardPage, /const allGames|Final Results/);
-  assert.match(scoreboard, /fetch\('\/api\/games', \{ cache: 'no-store' \}\)/);
+  assert.match(scoreboard, /fetch\(`\/api\/games\$\{query\}`/);
   assert.match(scoreboard, /not_scheduled_for_current_phase/);
   assert.match(scoreboard, /role="alert"/);
   assert.match(scoreboard, /aria-pressed=/);
+});
+
+test('scoreboard browses real source dates with independent caches and measured glance counts', () => {
+  assert.match(scoreboard, /Next published slate/);
+  assert.match(scoreboard, /Previous schedule date/);
+  assert.match(scoreboard, /Next schedule date/);
+  assert.match(scoreboard, /MaxPreps UIL schedule/);
+  assert.match(scoreboard, /scheduledGames/);
+  assert.match(scoreboard, /finalGames/);
+  assert.match(gamesApi, /const gamesCache = new Map/);
+  assert.match(gamesApi, /isValidScheduleDate/);
+  assert.match(gamesApi, /cacheKey = requestedDate \|\| 'next-published'/);
+  assert.match(gamesApi, /fetchScores\(classification, undefined, requestedDate\)/);
+  assert.match(maxpreps, /url\.searchParams\.set\('date'/);
 });
 
 test('game cards use sourced game state without dormant enrichment lookups', () => {
@@ -94,4 +109,5 @@ test('optional AI checks run on demand and never claim an unmeasured system is a
   assert.match(aiStatusButton, /void fetchStatus\(\)/);
   assert.doesNotMatch(brainApi, /system: 'active'/);
   assert.match(brainApi, /system: data\.state \? 'available' : 'not_measured'/);
+  assert.match(eloColumn, /\[teamId, teamName\]/);
 });

@@ -357,7 +357,8 @@ export function getMaxPrepsTeamUrl(teamId: string, teamName: string): string {
  */
 export async function fetchScores(
   classification: string,
-  week?: number
+  week?: number,
+  requestedDate?: string,
 ): Promise<MaxPrepsGame[]> {
   const division = SCOREBOARD_DIVISIONS[classification];
   if (!division) return [];
@@ -367,6 +368,10 @@ export async function fetchScores(
   url.searchParams.set('ssid', SCOREBOARD_SPORT_ID);
   url.searchParams.set('state', STATE);
   url.searchParams.set('statedivisionid', division.stateDivisionId);
+  if (requestedDate) {
+    const [year, month, day] = requestedDate.split('-');
+    url.searchParams.set('date', `${Number(month)}/${Number(day)}/${year}`);
+  }
   
   try {
     const response = await fetch(url, {
