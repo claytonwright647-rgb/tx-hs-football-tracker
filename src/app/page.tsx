@@ -3,8 +3,10 @@ import ClassificationCard from '@/components/ClassificationCard';
 import SeasonIntelligence from '@/components/SeasonIntelligence';
 import HeroCountdown from '@/components/HeroCountdown';
 import { CLASSIFICATIONS, CURRENT_CHAMPIONS, SEASON_INFO, NEXT_SEASON } from '@/lib/constants';
+import { getCurrentPhase, getPhaseConfig } from '@/lib/seasonIntelligence';
 
 export default function Home() {
+  const currentPhase = getPhaseConfig(getCurrentPhase());
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950">
       <Header />
@@ -20,7 +22,7 @@ export default function Home() {
           <div className="relative z-10">
             <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 bg-blue-500/10 border border-blue-400/20 rounded-full">
               <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
-              <span className="text-blue-300 text-xs font-semibold tracking-wider uppercase">Offseason Mode</span>
+              <span className="text-blue-300 text-xs font-semibold tracking-wider uppercase">{currentPhase.displayName}</span>
             </div>
 
             <h1 className="text-4xl md:text-6xl font-black text-white mb-2 tracking-tight">
@@ -69,7 +71,7 @@ export default function Home() {
           </p>
           <div className="flex items-center justify-center gap-4">
             <a
-              href="https://www.wright-sports.com"
+              href="https://wright-sports.org"
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-400 hover:text-blue-300 text-sm"

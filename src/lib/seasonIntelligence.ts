@@ -58,8 +58,8 @@ export const SEASON_CONFIGS: Record<number, SeasonConfig> = {
   },
 };
 
-export function getCurrentSeasonYear(): number {
-  const now = new Date();
+export function getCurrentSeasonYear(date?: Date): number {
+  const now = date || new Date();
   const month = now.getMonth(); // 0-indexed
   const year = now.getFullYear();
   
@@ -105,7 +105,7 @@ function generateSeasonConfig(year: number): SeasonConfig {
 
 export function getCurrentPhase(date?: Date): SeasonPhase {
   const now = date || new Date();
-  const config = getSeasonConfig();
+  const config = getSeasonConfig(getCurrentSeasonYear(now));
   
   const toDate = (str: string) => new Date(str + 'T00:00:00');
   
@@ -182,7 +182,7 @@ export const PHASE_CONFIGS: Record<SeasonPhase, PhaseConfig> = {
   schedule_watch: {
     phase: 'schedule_watch',
     displayName: 'Schedule Watch',
-    description: 'Looking for 2025 schedules...',
+    description: 'Looking for current-season schedules...',
     fetchSchedules: true,
     fetchScores: false,
     fetchRankings: true,

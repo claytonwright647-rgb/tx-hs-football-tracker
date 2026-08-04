@@ -4,6 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { sportsOrigin } from '@/lib/trackerOrigins';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -14,7 +15,7 @@ export const maxDuration = 60;
 export async function GET(req: NextRequest) {
   try {
     // Proxy to main dashboard Brain AI
-    const response = await fetch('https://www.wright-sports.com/api/ai-brain', {
+    const response = await fetch(`${sportsOrigin}/api/ai-brain`, {
       headers: {
         'x-hs-football-context': 'true',
       },
@@ -80,7 +81,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Proxy POST requests to main dashboard
-    const response = await fetch('https://www.wright-sports.com/api/ai-brain', {
+    const response = await fetch(`${sportsOrigin}/api/ai-brain`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

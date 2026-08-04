@@ -93,7 +93,7 @@ export function AIStatusButton() {
       // Try HS Football specific endpoint first, fallback to main dashboard
       const endpoints = [
         '/api/ai-status',
-        'https://www.wright-sports.com/api/ai-status'
+        'https://wright-sports.org/api/ai-status'
       ];
       
       let data = null;
@@ -212,7 +212,7 @@ function AIStatusModal({
     try {
       const endpoints = [
         '/api/brain-ai',
-        'https://www.wright-sports.com/api/ai-brain'
+        'https://wright-sports.org/api/ai-brain'
       ];
       
       for (const endpoint of endpoints) {

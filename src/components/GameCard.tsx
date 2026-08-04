@@ -28,10 +28,7 @@ export default function GameCard({ game, onClick }: GameCardProps) {
     return placeholders.some(ph => name.toLowerCase().includes(ph.toLowerCase()));
   }
 
-  // Filter: do not render if either team is a placeholder
-  if (isPlaceholderTeam(game.homeTeam.name) || isPlaceholderTeam(game.awayTeam.name)) {
-    return null;
-  }
+  const isPlaceholderMatch = isPlaceholderTeam(game.homeTeam.name) || isPlaceholderTeam(game.awayTeam.name);
   const [mismatches, setMismatches] = useState<string[]>([]);
   const [injuryInfo, setInjuryInfo] = useState<string | null>(null);
   const [playByPlay, setPlayByPlay] = useState<string[]>([]);
@@ -296,6 +293,8 @@ export default function GameCard({ game, onClick }: GameCardProps) {
   };
 
   // Example enhancements: venue, TV, weather, odds, quick actions, etc.
+  if (isPlaceholderMatch) return null;
+
   return (
     <div className="rounded-xl bg-gray-900 border border-gray-700 p-4 shadow-lg hover:shadow-xl transition-shadow cursor-pointer" onClick={onClick}>
       <div className="flex items-center gap-2 mb-2">
