@@ -36,6 +36,23 @@ interface GameDetailModalProps {
   } | null;
 }
 
+function scheduleLabel(date?: string, time?: string): string {
+  if (!date) return 'Schedule unavailable';
+  const hasPublishedTime = Boolean(time?.includes('T'));
+  const parsed = new Date(hasPublishedTime && time ? time : `${date}T12:00:00-05:00`);
+  if (Number.isNaN(parsed.getTime())) return hasPublishedTime ? `${date} · ${time}` : `${date} · Time TBA`;
+  const formatted = parsed.toLocaleString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    hour: hasPublishedTime ? 'numeric' : undefined,
+    minute: hasPublishedTime ? '2-digit' : undefined,
+    timeZone: 'America/Chicago',
+    timeZoneName: hasPublishedTime ? 'short' : undefined,
+  });
+  return hasPublishedTime ? formatted : `${formatted} · Time TBA`;
+}
+
 export default function GameDetailModal({ isOpen, onClose, game }: GameDetailModalProps) {
   useEffect(() => {
     if (!isOpen) return;
@@ -118,7 +135,7 @@ export default function GameDetailModal({ isOpen, onClose, game }: GameDetailMod
           {/* Game Time/Date for upcoming */}
           {!isLive && !isFinal && game.date && (
             <div className="text-center mt-4 text-sm text-gray-400">
-              📅 {game.date} {game.time && `• ${game.time}`}
+              📅 {scheduleLabel(game.date, game.time)}
             </div>
           )}
         </div>

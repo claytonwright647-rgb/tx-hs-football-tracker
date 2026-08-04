@@ -16,6 +16,7 @@ const highlights = read('src/components/GameHighlights.tsx');
 const highlightsApi = read('src/app/api/highlights/route.ts');
 const aiStandingsApi = read('src/app/api/brain-ai/standings/[leagueId]/route.ts');
 const footballField = read('src/components/fields/FootballField.tsx');
+const gameDetailModal = read('src/components/GameDetailModal.tsx');
 const gamesApi = read('src/app/api/games/route.ts');
 const maxpreps = read('src/lib/maxpreps.ts');
 const aiStatusButton = read('src/components/AIStatusButton.tsx');
@@ -61,6 +62,13 @@ test('missing live field position never creates a midfield ball marker', () => {
   assert.match(footballField, /Field Position - No live game data/);
   assert.doesNotMatch(footballField, /Show default ball at 50|left-1\/2.*opacity-30/);
   assert.match(footballField, /\{hasLiveData && <div className="flex justify-center/);
+});
+
+test('game details format published kickoffs in Central time instead of exposing raw timestamps', () => {
+  assert.match(gameDetailModal, /scheduleLabel\(game\.date, game\.time\)/);
+  assert.match(gameDetailModal, /timeZone: 'America\/Chicago'/);
+  assert.match(gameDetailModal, /Time TBA/);
+  assert.doesNotMatch(gameDetailModal, /\{game\.time && `• \$\{game\.time\}`\}/);
 });
 
 test('official feed games normalize into working filters without fabricated scores', () => {
