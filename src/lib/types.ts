@@ -58,6 +58,8 @@ export interface Game {
   city: string;
   date: string;
   time?: string;
+  hasPublishedTime?: boolean;
+  isScrimmage?: boolean;
   broadcast?: string;
   isDistrictGame?: boolean;
   week?: number;

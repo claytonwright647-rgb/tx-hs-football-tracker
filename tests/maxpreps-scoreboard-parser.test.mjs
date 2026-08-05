@@ -43,6 +43,7 @@ test('official scoreboard cards preserve team order, classification, and publish
     awayScore: null,
     status: 'scheduled',
     startTime: '2026-08-28T19:30:00-05:00',
+    hasPublishedTime: true,
     venue: '',
     city: '',
     classification: '5A D1',
@@ -59,7 +60,14 @@ test('final score markers are parsed, while absent scores are never changed to z
   assert.equal(finalGame[0].awayScore, 21);
   assert.equal(finalGame[0].homeScore, 35);
   assert.equal(tbaGame[0].startTime, '2026-11-06');
+  assert.equal(tbaGame[0].hasPublishedTime, false);
   assert.equal(tbaGame[0].awayScore, null);
   assert.equal(tbaGame[0].homeScore, null);
 });
 
+test('midnight source placeholders are not presented as real kickoffs', () => {
+  const midnight = parseMaxPrepsScoreboard(contest({ id: 'game-midnight', details: '12:00a', date: '8-13-2026' }), '5A D2');
+
+  assert.equal(midnight[0].startTime, '2026-08-13T00:00:00-05:00');
+  assert.equal(midnight[0].hasPublishedTime, false);
+});

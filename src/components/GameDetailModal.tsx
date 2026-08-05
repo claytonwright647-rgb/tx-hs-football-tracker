@@ -21,6 +21,8 @@ interface GameDetailModalProps {
     venue?: string;
     date?: string;
     time?: string;
+    hasPublishedTime?: boolean;
+    isScrimmage?: boolean;
     classification?: string;
     id?: string;
     // Live game situation (when available)
@@ -36,9 +38,8 @@ interface GameDetailModalProps {
   } | null;
 }
 
-function scheduleLabel(date?: string, time?: string): string {
+function scheduleLabel(date?: string, time?: string, hasPublishedTime = false): string {
   if (!date) return 'Schedule unavailable';
-  const hasPublishedTime = Boolean(time?.includes('T'));
   const parsed = new Date(hasPublishedTime && time ? time : `${date}T12:00:00-05:00`);
   if (Number.isNaN(parsed.getTime())) return hasPublishedTime ? `${date} · ${time}` : `${date} · Time TBA`;
   const formatted = parsed.toLocaleString('en-US', {
@@ -134,8 +135,13 @@ export default function GameDetailModal({ isOpen, onClose, game }: GameDetailMod
 
           {/* Game Time/Date for upcoming */}
           {!isLive && !isFinal && game.date && (
-            <div className="text-center mt-4 text-sm text-gray-400">
-              📅 {scheduleLabel(game.date, game.time)}
+            <div className="mt-4 text-center text-sm text-gray-400">
+              <p>📅 {scheduleLabel(game.date, game.time, game.hasPublishedTime)}</p>
+              {game.isScrimmage && (
+                <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-sky-300">
+                  Preseason scrimmage · does not count in the regular-season record
+                </p>
+              )}
             </div>
           )}
         </div>

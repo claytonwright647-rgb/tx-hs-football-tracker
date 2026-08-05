@@ -22,6 +22,7 @@ const maxpreps = read('src/lib/maxpreps.ts');
 const aiStatusButton = read('src/components/AIStatusButton.tsx');
 const brainApi = read('src/app/api/brain-ai/route.ts');
 const eloColumn = read('src/components/ELOStandingsColumn.tsx');
+const teamPage = read('src/app/team/[slug]/page.tsx');
 
 test('home and scoreboard routes render the canonical live scoreboard', () => {
   assert.match(home, /<Scoreboard\s*\/>/);
@@ -80,10 +81,26 @@ test('missing live field position never creates a midfield ball marker', () => {
 });
 
 test('game details format published kickoffs in Central time instead of exposing raw timestamps', () => {
-  assert.match(gameDetailModal, /scheduleLabel\(game\.date, game\.time\)/);
+  assert.match(gameDetailModal, /scheduleLabel\(game\.date, game\.time, game\.hasPublishedTime\)/);
   assert.match(gameDetailModal, /timeZone: 'America\/Chicago'/);
   assert.match(gameDetailModal, /Time TBA/);
   assert.doesNotMatch(gameDetailModal, /\{game\.time && `• \$\{game\.time\}`\}/);
+});
+
+test('preseason scrimmages and unknown kickoff times are labeled truthfully', () => {
+  assert.match(gamesApi, /date < SEASON_INFO\.regularSeasonStart/);
+  assert.match(gamesApi, /hasPublishedTime = mpGame\.hasPublishedTime/);
+  assert.match(gameCard, /label: 'SCRIMMAGE'/);
+  assert.match(gameCard, /game\.hasPublishedTime === true/);
+  assert.match(scoreboard, /Preseason scrimmages:/);
+  assert.match(scoreboard, /do not count in team records/);
+  assert.doesNotMatch(gameCard, /Boolean\(game\.time\?\.includes\('T'\)\)/);
+});
+
+test('team pages use the direct official feed and contain no Firecrawl dependency', () => {
+  assert.match(teamPage, /direct MaxPreps UIL feed/);
+  assert.match(teamPage, /href="\/scoreboard"/);
+  assert.doesNotMatch(teamPage, /Firecrawl|FIRECRAWL_API_KEY|firecrawlClient/);
 });
 
 test('official feed games normalize into working filters without fabricated scores', () => {

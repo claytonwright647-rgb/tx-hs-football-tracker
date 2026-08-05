@@ -8,6 +8,7 @@ import {
   shouldFetchSchedules,
   type SeasonPhase,
 } from '@/lib/seasonIntelligence';
+import { SEASON_INFO } from '@/lib/constants';
 
 // Cache each browsed date independently so navigating the schedule cannot
 // serve a different day's games from the one-minute live cache.
@@ -61,7 +62,9 @@ function convertToLiveGame(mpGame: MaxPrepsGame): LiveGame {
   else if (mpGame.status === 'final') status = 'final';
   else if (mpGame.status === 'postponed') status = 'postponed';
 
-  const hasPublishedTime = mpGame.startTime.includes('T');
+  const hasPublishedTime = mpGame.hasPublishedTime;
+  const date = mpGame.startTime.split('T')[0];
+  const isScrimmage = !mpGame.isPlayoff && date < SEASON_INFO.regularSeasonStart;
 
   return {
     id: mpGame.gameId,
@@ -77,8 +80,10 @@ function convertToLiveGame(mpGame: MaxPrepsGame): LiveGame {
     playoffRound: mpGame.playoffRound,
     venue: mpGame.venue,
     city: mpGame.city,
-    date: mpGame.startTime.split('T')[0],
+    date,
     time: hasPublishedTime ? mpGame.startTime : undefined,
+    hasPublishedTime,
+    isScrimmage,
     week: mpGame.week,
   };
 }

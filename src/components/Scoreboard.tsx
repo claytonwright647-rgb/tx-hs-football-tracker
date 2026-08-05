@@ -155,6 +155,7 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
   ).length;
   const scheduledGames = games.filter((game) => game.status === 'scheduled').length;
   const finalGames = games.filter((game) => game.status === 'final').length;
+  const scrimmageGames = games.filter((game) => game.isScrimmage).length;
   const displayScheduleDate = browseDate || sourceScheduleDate;
 
   const moveSchedule = (amount: number) => {
@@ -164,7 +165,7 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
 
   const glanceCards = [
     { label: 'Published', value: games.length, detail: 'Unique sourced games', icon: Layers3, color: 'text-orange-300' },
-    { label: 'Scheduled', value: scheduledGames, detail: 'Kickoffs ahead', icon: Clock3, color: 'text-blue-300' },
+    { label: scrimmageGames > 0 ? 'Scrimmages' : 'Scheduled', value: scheduledGames, detail: scrimmageGames > 0 ? 'Preseason; records unaffected' : 'Kickoffs ahead', icon: Clock3, color: 'text-blue-300' },
     { label: 'Live now', value: totalLiveGames, detail: totalLiveGames ? 'Games in progress' : 'None in progress', icon: Radio, color: totalLiveGames ? 'text-red-300' : 'text-gray-300' },
     { label: 'Final', value: finalGames, detail: 'Completed games', icon: CircleCheckBig, color: 'text-green-300' },
   ];
@@ -235,6 +236,12 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
           ))}
         </div>
       </section>
+
+      {!loading && scrimmageGames > 0 && (
+        <div role="note" className="rounded-xl border border-sky-500/30 bg-sky-950/25 px-4 py-3 text-sm text-sky-100">
+          <span className="font-bold">Preseason scrimmages:</span> these matchups are practice evaluations before the regular season begins on August 27. Their results do not count in team records.
+        </div>
+      )}
 
       {/* Classification Cards Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -376,6 +383,8 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
           venue: selectedGame.venue,
           date: selectedGame.date,
           time: selectedGame.time,
+          hasPublishedTime: selectedGame.hasPublishedTime,
+          isScrimmage: selectedGame.isScrimmage,
           classification: selectedGame.sourceClassifications?.join(' · ')
             || `${selectedGame.classification}${selectedGame.division ? `-${selectedGame.division}` : ''}`,
           id: selectedGame.id,

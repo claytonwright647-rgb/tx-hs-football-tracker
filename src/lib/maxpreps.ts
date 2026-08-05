@@ -81,6 +81,7 @@ export interface MaxPrepsGame {
   awayScore: number | null;
   status: 'scheduled' | 'live' | 'final' | 'postponed';
   startTime: string;
+  hasPublishedTime: boolean;
   venue: string;
   city: string;
   classification: string;
@@ -251,6 +252,12 @@ function scheduledStart(gameUrl: string, details: string): string {
   return `${date}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00${offset}`;
 }
 
+function hasExplicitEventTime(startTime: unknown): boolean {
+  if (typeof startTime !== 'string' || !startTime.includes('T')) return false;
+  const time = startTime.split('T')[1]?.replace(/Z$/, '').replace(/[+-]\d{2}:?\d{2}$/, '') || '';
+  return !/^00:00(?::00(?:\.\d+)?)?$/.test(time);
+}
+
 function scoreboardStatus(boxAttributes: string, details: string): MaxPrepsGame['status'] {
   const state = attribute(boxAttributes, 'data-contest-state').toLowerCase();
   const live = attribute(boxAttributes, 'data-contest-live') === '1';
@@ -307,6 +314,10 @@ export function parseMaxPrepsScoreboard(
       awayScore: teams[0].score,
       status: scoreboardStatus(boxAttributes, details),
       startTime,
+      // MaxPreps sometimes serializes an unknown kickoff as 12:00 a.m.
+      // A midnight high-school football start is a placeholder, not a
+      // credible published time, so keep the exact date but show Time TBA.
+      hasPublishedTime: startTime.includes('T') && !/T00:00:00/.test(startTime),
       venue: '',
       city: '',
       classification,
@@ -532,6 +543,7 @@ export async function fetchPlayoffBracket(
         awayScore: event.awayTeam?.score ?? null,
         status: parseEventStatus(event.eventStatus),
         startTime: event.startDate || '',
+        hasPublishedTime: hasExplicitEventTime(event.startDate),
         venue: event.location?.name || '',
         city: event.location?.address?.addressLocality || '',
         classification,
@@ -588,6 +600,7 @@ export async function fetchTeamSchedule(teamId: string): Promise<MaxPrepsGame[]>
       awayScore: event.awayTeam?.score ?? null,
       status: parseEventStatus(event.eventStatus),
       startTime: event.startDate || '',
+      hasPublishedTime: hasExplicitEventTime(event.startDate),
       venue: event.location?.name || '',
       city: event.location?.address?.addressLocality || '',
       classification: '',

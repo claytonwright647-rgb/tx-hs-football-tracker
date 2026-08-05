@@ -23,6 +23,7 @@ function gameState(game: Game | LiveGame) {
   if (final) return { live, final, label: 'FINAL' };
   if (game.status === 'postponed') return { live, final, label: 'POSTPONED' };
   if (game.status === 'cancelled') return { live, final, label: 'CANCELLED' };
+  if (game.isScrimmage) return { live, final, label: 'SCRIMMAGE' };
   return { live, final, label: 'SCHEDULED' };
 }
 
@@ -32,7 +33,7 @@ function score(value: number | undefined, showScore: boolean) {
 
 function scheduleLine(game: Game | LiveGame, showScore: boolean) {
   const raw = game.time || game.date;
-  const hasPublishedTime = Boolean(game.time?.includes('T'));
+  const hasPublishedTime = game.hasPublishedTime === true;
   const parsed = raw ? new Date(hasPublishedTime ? raw : `${game.date}T12:00:00-05:00`) : null;
   const formatted = parsed && !Number.isNaN(parsed.getTime())
     ? parsed.toLocaleString('en-US', {
@@ -78,6 +79,11 @@ export default function GameCard({ game, onClick }: GameCardProps) {
           {game.isPlayoff && (
             <span className="truncate text-[11px] font-semibold uppercase tracking-wider text-yellow-300">
               {game.playoffRound || 'Playoffs'}
+            </span>
+          )}
+          {game.isScrimmage && (
+            <span className="truncate text-[11px] font-semibold uppercase tracking-wider text-sky-300">
+              Preseason
             </span>
           )}
         </div>
