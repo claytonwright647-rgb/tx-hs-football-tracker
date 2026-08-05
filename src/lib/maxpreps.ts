@@ -79,7 +79,7 @@ export interface MaxPrepsGame {
   awayTeamLogo?: string | null;
   homeScore: number | null;
   awayScore: number | null;
-  status: 'scheduled' | 'live' | 'final' | 'postponed';
+  status: 'scheduled' | 'live' | 'final' | 'postponed' | 'cancelled';
   startTime: string;
   hasPublishedTime: boolean;
   venue: string;
@@ -262,7 +262,8 @@ function scoreboardStatus(boxAttributes: string, details: string): MaxPrepsGame[
   const state = attribute(boxAttributes, 'data-contest-state').toLowerCase();
   const live = attribute(boxAttributes, 'data-contest-live') === '1';
   const label = details.toLowerCase();
-  if (/postpon|cancel/.test(`${state} ${label}`)) return 'postponed';
+  if (/cancel/.test(`${state} ${label}`)) return 'cancelled';
+  if (/postpon/.test(`${state} ${label}`)) return 'postponed';
   if (live || /live|inprogress|in-progress/.test(state)) return 'live';
   if (/final|postgame|complete|completed/.test(`${state} ${label}`)) return 'final';
   return 'scheduled';
@@ -390,7 +391,9 @@ export async function fetchScores(
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         'Accept': 'text/html,application/xhtml+xml',
       },
-      next: { revalidate: 300 },
+      // The default scoreboard is the live path. Explicit historical/future
+      // dates can use the longer schedule cache.
+      next: { revalidate: requestedDate ? 300 : 30 },
     });
 
     if (!response.ok) {
@@ -411,7 +414,8 @@ function parseEventStatus(status?: string): MaxPrepsGame['status'] {
   const lower = status.toLowerCase();
   if (lower.includes('progress') || lower.includes('live')) return 'live';
   if (lower.includes('finish') || lower.includes('final') || lower.includes('ended')) return 'final';
-  if (lower.includes('postpone') || lower.includes('cancel')) return 'postponed';
+  if (lower.includes('cancel')) return 'cancelled';
+  if (lower.includes('postpone')) return 'postponed';
   return 'scheduled';
 }
 

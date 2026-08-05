@@ -75,9 +75,17 @@ test('missing highlight providers produce a truthful unavailable state', () => {
 });
 
 test('missing live field position never creates a midfield ball marker', () => {
-  assert.match(footballField, /Field Position - No live game data/);
+  assert.match(footballField, /no complete official live situation/);
+  assert.match(footballField, /Number\.isFinite\(yardsToEndzone\)/);
+  assert.match(footballField, /possessionSide &&/);
+  assert.doesNotMatch(footballField, /distance = situation\?\.distance \|\| 10/);
+  assert.doesNotMatch(footballField, /yardLine = situation\?\.yardLine \|\| 50/);
   assert.doesNotMatch(footballField, /Show default ball at 50|left-1\/2.*opacity-30/);
   assert.match(footballField, /\{hasLiveData && <div className="flex justify-center/);
+});
+
+test('score-only live cards explain which detailed facts the source does not provide', () => {
+  assert.match(gameCard, /Live score only — detailed clock, possession, field position, and play-by-play are unavailable/);
 });
 
 test('game details format published kickoffs in Central time instead of exposing raw timestamps', () => {

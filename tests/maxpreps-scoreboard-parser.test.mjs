@@ -71,3 +71,11 @@ test('midnight source placeholders are not presented as real kickoffs', () => {
   assert.equal(midnight[0].startTime, '2026-08-13T00:00:00-05:00');
   assert.equal(midnight[0].hasPublishedTime, false);
 });
+
+test('cancelled and postponed games retain distinct official states', () => {
+  const cancelled = parseMaxPrepsScoreboard(contest({ id: 'cancelled', state: 'cancelled', details: 'Cancelled' }), '5A D2');
+  const postponed = parseMaxPrepsScoreboard(contest({ id: 'postponed', state: 'postponed', details: 'Postponed' }), '5A D2');
+
+  assert.equal(cancelled[0].status, 'cancelled');
+  assert.equal(postponed[0].status, 'postponed');
+});

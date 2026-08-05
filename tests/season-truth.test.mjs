@@ -24,8 +24,16 @@ test('public navigation uses the VPS domains', () => {
 test('live score polling follows the actual season phase', () => {
   assert.equal(shouldFetchLiveData(new Date('2026-08-04T12:00:00-05:00')), false);
   assert.equal(shouldFetchSchedules(new Date('2026-08-04T12:00:00-05:00')), true);
+  assert.equal(shouldFetchLiveData(new Date('2026-08-13T12:00:00-05:00')), true);
   assert.equal(shouldFetchLiveData(new Date('2026-08-22T12:00:00-05:00')), true);
   assert.equal(shouldFetchLiveData(new Date('2026-09-04T12:00:00-05:00')), true);
+});
+
+test('a scoreboard opened before kickoff keeps checking for the live transition', () => {
+  const scoreboard = readFileSync('src/components/Scoreboard.tsx', 'utf8');
+  assert.match(scoreboard, /hasLiveGames \? 30000 : 60000/);
+  assert.match(scoreboard, /fetchGames\(true\)/);
+  assert.match(scoreboard, /pollingPhase/);
 });
 
 test('games API checks published schedules before the live window and avoids year-round playoff polling', () => {

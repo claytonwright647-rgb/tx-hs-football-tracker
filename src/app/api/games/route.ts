@@ -61,6 +61,7 @@ function convertToLiveGame(mpGame: MaxPrepsGame): LiveGame {
   if (mpGame.status === 'live') status = 'in_progress';
   else if (mpGame.status === 'final') status = 'final';
   else if (mpGame.status === 'postponed') status = 'postponed';
+  else if (mpGame.status === 'cancelled') status = 'cancelled';
 
   const hasPublishedTime = mpGame.hasPublishedTime;
   const date = mpGame.startTime.split('T')[0];

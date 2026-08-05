@@ -47,14 +47,16 @@ export const SEASON_CONFIGS: Record<number, SeasonConfig> = {
     year: 2026,
     scheduleReleaseStart: '2026-06-01',
     fallCampStart: '2026-08-03',
-    scrimmagesStart: '2026-08-20',
+    // UIL permits first scrimmages Aug. 13 and the published scoreboard already
+    // contains that slate. Start the live window at the first verified event.
+    scrimmagesStart: '2026-08-13',
     regularSeasonStart: '2026-08-27',
     regularSeasonEnd: '2026-11-07',
     playoffsStart: '2026-11-12',
     stateChampionships: '2026-12-16',
     seasonEnd: '2026-12-19',
     startLookingForSchedules: '2026-06-01',
-    startLookingForScores: '2026-08-20',
+    startLookingForScores: '2026-08-13',
   },
 };
 

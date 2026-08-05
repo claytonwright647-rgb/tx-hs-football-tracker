@@ -69,9 +69,9 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
   const [sourceScheduleDate, setSourceScheduleDate] = useState<string | null>(null);
 
   // Fetch games from API
-  const fetchGames = useCallback(async () => {
+  const fetchGames = useCallback(async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       setError(null);
       
       const query = browseDate ? `?date=${encodeURIComponent(browseDate)}` : '';
@@ -100,26 +100,27 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
       setSourceStatus('request_failed');
       setSourceMessage(null);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [browseDate]);
 
   // Initial fetch
   useEffect(() => {
-    fetchGames();
+    void fetchGames();
   }, [fetchGames]);
 
-  // Auto-refresh for live games (every 30 seconds)
+  // Keep a page opened before kickoff current. Live slates refresh faster;
+  // near-season scheduled slates still re-check without requiring a reload.
   useEffect(() => {
     const hasLiveGames = games.some(g => 
       g.status === 'in_progress' || g.status === 'halftime'
     );
-    
-    if (hasLiveGames) {
-      const interval = setInterval(fetchGames, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [games, fetchGames]);
+    const pollingPhase = ['fall_camp', 'scrimmages', 'regular_season', 'playoffs', 'state_championships'].includes(phase || '');
+    if (browseDate || (!hasLiveGames && !pollingPhase)) return;
+
+    const interval = setInterval(() => void fetchGames(true), hasLiveGames ? 30000 : 60000);
+    return () => clearInterval(interval);
+  }, [browseDate, games, fetchGames, phase]);
 
   const handleGameClick = (game: Game | LiveGame) => {
     setSelectedGame(game);
@@ -182,7 +183,7 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
             </span>
           </div>
           <button 
-            onClick={fetchGames}
+            onClick={() => void fetchGames()}
             className="bg-white/20 hover:bg-white/30 px-4 py-1 rounded text-white text-sm transition-colors"
           >
             Refresh
@@ -290,7 +291,7 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={fetchGames}
+            onClick={() => void fetchGames()}
             disabled={loading}
             aria-label="Refresh official games"
             className="px-3 py-1 rounded bg-gray-700 text-gray-300 hover:bg-gray-600 disabled:opacity-50"
@@ -328,7 +329,7 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
         <div role="alert" className="rounded-xl border border-red-500/50 bg-red-950/30 p-6 text-center">
           <p className="text-lg font-semibold text-red-300">The official games feed could not be reached.</p>
           <p className="mt-2 text-sm text-gray-400">{error}</p>
-          <button type="button" onClick={fetchGames} className="mt-4 rounded-lg bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-500">
+          <button type="button" onClick={() => void fetchGames()} className="mt-4 rounded-lg bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-500">
             Retry official feed
           </button>
         </div>

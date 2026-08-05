@@ -22,22 +22,33 @@ interface FootballFieldProps {
 }
 
 export function FootballField({ situation, homeTeam, awayTeam }: FootballFieldProps) {
-  const down = situation?.down || 0;
-  const distance = situation?.distance || 10;
-  const yardLine = situation?.yardLine || 50;
-  const yardsToEndzone = situation?.yardsToEndzone || 50;
-  const possession = situation?.possession;
-  const isRedZone = situation?.isRedZone || yardsToEndzone <= 20;
-  const hasLiveData = down > 0 && possession;
+  const down = Number(situation?.down);
+  const distance = Number(situation?.distance);
+  const yardsToEndzone = Number(situation?.yardsToEndzone);
+  const possession = situation?.possession?.trim() || '';
+  const possessionKey = possession.toLowerCase();
+  const isTeamMatch = (team?: FootballFieldProps['homeTeam']) => Boolean(team && [team.abbreviation, team.name]
+    .filter(Boolean)
+    .some((label) => String(label).trim().toLowerCase() === possessionKey));
+  const possessionSide = isTeamMatch(homeTeam) ? 'home' : isTeamMatch(awayTeam) ? 'away' : null;
+  const hasLiveData = Boolean(
+    possessionSide &&
+    Number.isInteger(down) && down >= 1 && down <= 4 &&
+    Number.isFinite(distance) && distance >= 0 && distance <= 100 &&
+    Number.isFinite(yardsToEndzone) && yardsToEndzone >= 0 && yardsToEndzone <= 100
+  );
+  const isRedZone = hasLiveData && (situation?.isRedZone === true || yardsToEndzone <= 20);
   
   // Calculate ball position on the field (0-100%)
   // yardsToEndzone: 50 = midfield, 20 = red zone, 1 = goal line
-  const ballPositionPercent = yardsToEndzone 
+  const ballPositionPercent = possessionSide === 'away'
     ? 100 - yardsToEndzone
-    : yardLine;
+    : yardsToEndzone;
   
   // First down marker position
-  const firstDownPercent = Math.min(ballPositionPercent + (distance * 1), 100);
+  const firstDownPercent = possessionSide === 'away'
+    ? Math.min(ballPositionPercent + distance, 100)
+    : Math.max(ballPositionPercent - distance, 0);
 
   return (
     <div className="w-full">
@@ -53,7 +64,7 @@ export function FootballField({ situation, homeTeam, awayTeam }: FootballFieldPr
                 {situation?.downDistanceText || `${down === 1 ? '1st' : down === 2 ? '2nd' : down === 3 ? '3rd' : '4th'} & ${distance}`}
               </div>
               <div className="text-sm text-gray-400">
-                {possession} • {yardsToEndzone ? `${yardsToEndzone} yards to endzone` : `at the ${yardLine}`}
+                {possession} • {yardsToEndzone} yards to end zone
               </div>
             </div>
             {isRedZone && (
@@ -63,7 +74,7 @@ export function FootballField({ situation, homeTeam, awayTeam }: FootballFieldPr
             )}
           </div>
         ) : (
-          <span className="text-gray-500">Field Position - No live game data</span>
+          <span className="text-gray-500">Field position unavailable — no complete official live situation</span>
         )}
       </div>
       

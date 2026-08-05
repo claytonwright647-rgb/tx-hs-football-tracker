@@ -127,6 +127,12 @@ export default function GameCard({ game, onClick }: GameCardProps) {
           </div>
         )}
 
+        {state.live && !(possession || downDistance || situation?.lastPlay) && (
+          <div className="rounded-lg border border-sky-500/20 bg-sky-950/20 px-3 py-2 text-xs text-sky-200">
+            Live score only — detailed clock, possession, field position, and play-by-play are unavailable from the current source.
+          </div>
+        )}
+
         <div className="space-y-1.5 border-t border-gray-800 pt-3 text-xs text-gray-400">
           <p className="flex items-center gap-2"><Clock3 className="h-3.5 w-3.5 text-orange-400" /> {scheduleLine(game, showScore)}</p>
           {(game.venue || game.city) && <p className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5 text-orange-400" /> <span className="truncate">{[game.venue, game.city].filter(Boolean).join(' · ')}</span></p>}
