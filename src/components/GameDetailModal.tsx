@@ -25,6 +25,14 @@ interface GameDetailModalProps {
     isScrimmage?: boolean;
     classification?: string;
     id?: string;
+    scheduleVerification?: {
+      status: 'confirmed' | 'conflict';
+      sourceName: string;
+      sourceUrl: string;
+      checkedAt: string;
+      note: string;
+      unconfirmedFields?: Array<'date' | 'time' | 'venue' | 'homeAway'>;
+    };
     // Live game situation (when available)
     situation?: {
       down?: number;
@@ -97,11 +105,14 @@ export default function GameDetailModal({ isOpen, onClose, game }: GameDetailMod
   const isHalftime = game.status === 'halftime';
   const isFinal = game.status === 'final' || game.status === 'post';
   const isSixMan = /\b1A\b/.test(game.classification || '');
+  const fieldLength = isSixMan ? 80 : 100;
   const hasCompleteLiveSituation = isLive
     && Boolean(game.situation?.possession)
     && Number.isInteger(game.situation?.down)
     && Number.isFinite(game.situation?.distance)
-    && Number.isFinite(game.situation?.yardsToEndzone);
+    && Number.isFinite(game.situation?.yardsToEndzone)
+    && Number(game.situation?.yardsToEndzone) >= 0
+    && Number(game.situation?.yardsToEndzone) <= fieldLength;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -178,15 +189,24 @@ export default function GameDetailModal({ isOpen, onClose, game }: GameDetailMod
           )}
         </div>
 
+        {game.scheduleVerification && (
+          <div className={`mx-4 mt-4 rounded-lg border px-4 py-3 text-sm ${game.scheduleVerification.status === 'conflict' ? 'border-amber-500/40 bg-amber-950/25 text-amber-100' : 'border-emerald-500/30 bg-emerald-950/20 text-emerald-100'}`}>
+            <p className="font-bold">
+              {game.scheduleVerification.status === 'conflict' ? '⚠ Schedule details conflict' : '✓ School schedule verified'}
+            </p>
+            <p className="mt-1 text-xs leading-relaxed opacity-90">{game.scheduleVerification.note}</p>
+            <a className="mt-2 inline-block text-xs font-semibold underline underline-offset-2" href={game.scheduleVerification.sourceUrl} target="_blank" rel="noreferrer">
+              Source: {game.scheduleVerification.sourceName}
+            </a>
+          </div>
+        )}
+
         {/* Football Field Visualization */}
         <div className="p-4 border-t border-gray-700">
-          {isSixMan ? (
-            <div className="rounded-lg border border-sky-500/25 bg-sky-950/20 px-4 py-5 text-center text-sm text-sky-100">
-              Six-man field visualization is unavailable until the source provides format-aware 80-yard field position. No 11-man field marker is substituted.
-            </div>
-          ) : hasCompleteLiveSituation ? (
+          {hasCompleteLiveSituation ? (
             <FootballField
               situation={game.situation}
+              format={isSixMan ? 'six-man' : 'eleven-man'}
               homeTeam={{
                 abbreviation: game.homeAbbrev || 'HOME',
                 color: game.homeColor,
@@ -200,7 +220,9 @@ export default function GameDetailModal({ isOpen, onClose, game }: GameDetailMod
             />
           ) : (
             <div className="rounded-lg border border-gray-700 bg-gray-950/60 px-4 py-5 text-center text-sm text-gray-300">
-              Field position unavailable — the official source has not published complete possession, down, distance, and location data.
+              {isSixMan
+                ? 'Six-man field position unavailable — the official source has not published complete possession, down, distance, and 80-yard-field location data.'
+                : 'Field position unavailable — the official source has not published complete possession, down, distance, and location data.'}
             </div>
           )}
         </div>

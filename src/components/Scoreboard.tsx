@@ -408,6 +408,7 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
             || `${selectedGame.classification}${selectedGame.division ? `-${selectedGame.division}` : ''}`,
           id: selectedGame.id,
           situation: (selectedGame as LiveGame).situation,
+          scheduleVerification: selectedGame.scheduleVerification,
         } : null}
       />
     </div>

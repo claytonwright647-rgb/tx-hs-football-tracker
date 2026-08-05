@@ -126,7 +126,11 @@ test('presentation labels disclose source, venue, six-man, and live-data limitat
   assert.doesNotMatch(home, /Data sourced from UIL, MaxPreps, and Dave Campbell/);
   assert.match(gameCard, /Venue not published by source/);
   assert.match(gameDetailModal, /Live scores update automatically/);
-  assert.match(gameDetailModal, /Six-man field visualization is unavailable/);
+  assert.match(gameDetailModal, /format=\{isSixMan \? 'six-man' : 'eleven-man'\}/);
+  assert.match(gameDetailModal, /Six-man field position unavailable/);
+  assert.match(footballField, /fieldLength = format === 'six-man' \? 80 : 100/);
+  assert.match(footballField, /standardFirstDownDistance = format === 'six-man' \? 15 : 10/);
+  assert.match(footballField, /yardsToPercent/);
   assert.match(gameDetailModal, /closeButtonRef/);
   assert.match(gameDetailModal, /previousFocusRef/);
   assert.match(gameDetailModal, /dialogRef/);

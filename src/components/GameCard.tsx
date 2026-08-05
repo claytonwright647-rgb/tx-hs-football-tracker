@@ -57,13 +57,15 @@ export default function GameCard({ game, onClick }: GameCardProps) {
   const state = gameState(game);
   const showScore = state.live || state.final;
   const situation = (game as LiveGame).situation;
+  const verification = game.scheduleVerification;
+  const homeAwayUnconfirmed = verification?.unconfirmedFields?.includes('homeAway') === true;
   const possession = situation?.possession;
   const downDistance = situation?.down && situation?.distance
     ? `${situation.down}${situation.down === 1 ? 'st' : situation.down === 2 ? 'nd' : situation.down === 3 ? 'rd' : 'th'} & ${situation.distance}`
     : null;
   const accessibleState = showScore
     ? `${state.label}. ${game.awayTeam.name} ${score(game.awayScore, true)}, ${game.homeTeam.name} ${score(game.homeScore, true)}.`
-    : `${state.label}. ${game.awayTeam.name} at ${game.homeTeam.name}. ${scheduleLine(game, false)}.`;
+    : `${state.label}. ${game.awayTeam.name} ${homeAwayUnconfirmed ? 'versus' : 'at'} ${game.homeTeam.name}. ${scheduleLine(game, false)}.`;
 
   return (
     <button
@@ -99,7 +101,7 @@ export default function GameCard({ game, onClick }: GameCardProps) {
       <div className="space-y-3 p-4">
         <div className="grid grid-cols-[1fr_auto] items-center gap-4">
           <div className="min-w-0">
-            <p className="truncate text-xs font-semibold uppercase tracking-widest text-gray-500">Away</p>
+            <p className="truncate text-xs font-semibold uppercase tracking-widest text-gray-500">{homeAwayUnconfirmed ? 'Team' : 'Away'}</p>
             <p className="truncate text-lg font-bold text-white">{game.awayTeam.name}</p>
           </div>
           <span className="min-w-10 text-right text-3xl font-black tabular-nums text-white">
@@ -111,7 +113,7 @@ export default function GameCard({ game, onClick }: GameCardProps) {
 
         <div className="grid grid-cols-[1fr_auto] items-center gap-4">
           <div className="min-w-0">
-            <p className="truncate text-xs font-semibold uppercase tracking-widest text-gray-500">Home</p>
+            <p className="truncate text-xs font-semibold uppercase tracking-widest text-gray-500">{homeAwayUnconfirmed ? 'Team' : 'Home'}</p>
             <p className="truncate text-lg font-bold text-white">{game.homeTeam.name}</p>
           </div>
           <span className="min-w-10 text-right text-3xl font-black tabular-nums text-white">
@@ -140,6 +142,11 @@ export default function GameCard({ game, onClick }: GameCardProps) {
           <p className="flex items-center gap-2"><Clock3 className="h-3.5 w-3.5 text-orange-400" /> {scheduleLine(game, showScore)}</p>
           <p className="flex items-center gap-2"><MapPin className={`h-3.5 w-3.5 ${game.venue || game.city ? 'text-orange-400' : 'text-gray-600'}`} /> <span className="truncate">{game.venue || game.city ? [game.venue, game.city].filter(Boolean).join(' · ') : 'Venue not published by source'}</span></p>
           {game.broadcast && <p className="flex items-center gap-2"><Tv className="h-3.5 w-3.5 text-orange-400" /> {game.broadcast}</p>}
+          {verification && (
+            <p className={verification.status === 'conflict' ? 'font-semibold text-amber-300' : 'font-semibold text-emerald-300'}>
+              {verification.status === 'conflict' ? '⚠ Schedule conflict · details held as TBA' : `✓ Verified by ${verification.sourceName}`}
+            </p>
+          )}
         </div>
       </div>
     </button>

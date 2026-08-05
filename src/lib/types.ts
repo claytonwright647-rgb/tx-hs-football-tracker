@@ -64,6 +64,14 @@ export interface Game {
   isDistrictGame?: boolean;
   week?: number;
   sourceClassifications?: string[];
+  scheduleVerification?: {
+    status: 'confirmed' | 'conflict';
+    sourceName: string;
+    sourceUrl: string;
+    checkedAt: string;
+    note: string;
+    unconfirmedFields?: Array<'date' | 'time' | 'venue' | 'homeAway'>;
+  };
 }
 
 export interface LiveGame extends Game {

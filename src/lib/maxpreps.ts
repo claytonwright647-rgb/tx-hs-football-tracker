@@ -90,7 +90,7 @@ export interface MaxPrepsGame {
   awayTeamLogo?: string | null;
   homeScore: number | null;
   awayScore: number | null;
-  status: 'scheduled' | 'live' | 'final' | 'postponed' | 'cancelled';
+  status: 'scheduled' | 'live' | 'halftime' | 'final' | 'postponed' | 'cancelled';
   startTime: string;
   hasPublishedTime: boolean;
   venue: string;
@@ -275,6 +275,7 @@ function scoreboardStatus(boxAttributes: string, details: string): MaxPrepsGame[
   const label = details.toLowerCase();
   if (/cancel/.test(`${state} ${label}`)) return 'cancelled';
   if (/postpon/.test(`${state} ${label}`)) return 'postponed';
+  if (/half[ -]?time/.test(`${state} ${label}`)) return 'halftime';
   if (live || /live|inprogress|in-progress/.test(state)) return 'live';
   if (/final|postgame|complete|completed/.test(`${state} ${label}`)) return 'final';
   return 'scheduled';
@@ -423,6 +424,7 @@ export async function fetchScores(
 function parseEventStatus(status?: string): MaxPrepsGame['status'] {
   if (!status) return 'scheduled';
   const lower = status.toLowerCase();
+  if (/half[ -]?time/.test(lower)) return 'halftime';
   if (lower.includes('progress') || lower.includes('live')) return 'live';
   if (lower.includes('finish') || lower.includes('final') || lower.includes('ended')) return 'final';
   if (lower.includes('cancel')) return 'cancelled';

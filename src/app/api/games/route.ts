@@ -9,10 +9,17 @@ import {
   type SeasonPhase,
 } from '@/lib/seasonIntelligence';
 import { SEASON_INFO } from '@/lib/constants';
+import {
+  lastKnownGoodSlate,
+  normalizeOfficialProviderStatus,
+  rememberOfficialSlate,
+  type CachedOfficialSlate,
+} from '@/lib/official-game-replay';
+import { applyOfficialScheduleVerification } from '@/lib/official-schedule-verification';
 
 // Cache each browsed date independently so navigating the schedule cannot
 // serve a different day's games from the one-minute live cache.
-const gamesCache = new Map<string, { games: LiveGame[]; timestamp: number }>();
+const gamesCache = new Map<string, CachedOfficialSlate<LiveGame>>();
 const SCHEDULE_CACHE_TTL = 60 * 1000;
 const LIVE_CACHE_TTL = 30 * 1000;
 
@@ -58,11 +65,7 @@ function convertToLiveGame(mpGame: MaxPrepsGame): LiveGame {
   };
 
   // Map MaxPreps status to our status
-  let status: LiveGame['status'] = 'scheduled';
-  if (mpGame.status === 'live') status = 'in_progress';
-  else if (mpGame.status === 'final') status = 'final';
-  else if (mpGame.status === 'postponed') status = 'postponed';
-  else if (mpGame.status === 'cancelled') status = 'cancelled';
+  const status = normalizeOfficialProviderStatus(mpGame.status);
 
   const hasPublishedTime = mpGame.hasPublishedTime;
   const date = mpGame.startTime.split('T')[0];
@@ -180,7 +183,7 @@ async function fetchAllGames(phase: SeasonPhase, requestedDate?: string): Promis
 
   // Remove duplicates by gameId
   const validGames = allGames.filter((game) => game.homeTeam.name && game.awayTeam.name && game.date);
-  const uniqueGames = mergeSourceGames(validGames).sort((first, second) => {
+  const uniqueGames = mergeSourceGames(validGames).map(applyOfficialScheduleVerification).sort((first, second) => {
     const firstTime = new Date(first.time || `${first.date}T12:00:00-06:00`).getTime();
     const secondTime = new Date(second.time || `${second.date}T12:00:00-06:00`).getTime();
     return firstTime - secondTime || first.awayTeam.name.localeCompare(second.awayTeam.name);
@@ -208,7 +211,7 @@ export async function GET(request: Request) {
 
   const requestedDate = dateParam || undefined;
   const cacheKey = requestedDate || 'next-published';
-  const lastKnownGood = gamesCache.get(cacheKey);
+  const lastKnownGood = lastKnownGoodSlate(gamesCache, cacheKey);
 
   try {
     const now = new Date();
@@ -270,10 +273,7 @@ export async function GET(request: Request) {
     const allGames = officialResult.games;
     
     // Update cache
-    gamesCache.set(cacheKey, {
-      games: allGames,
-      timestamp: Date.now(),
-    });
+    rememberOfficialSlate(gamesCache, cacheKey, allGames);
 
     let games = [...allGames];
 
