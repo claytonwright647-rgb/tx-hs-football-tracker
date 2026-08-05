@@ -29,6 +29,14 @@ test('live score polling follows the actual season phase', () => {
   assert.equal(shouldFetchLiveData(new Date('2026-09-04T12:00:00-05:00')), true);
 });
 
+test('fall camp distinguishes first scrimmages from the regular-season countdown', () => {
+  assert.equal(shouldFetchLiveData(new Date('2026-08-13T12:00:00-05:00')), true);
+  assert.match(intelligence, /targetDate = new Date\(config\.scrimmagesStart/);
+  assert.match(intelligence, /First preseason scrimmages/);
+  assert.match(home, /Regular season begins in/);
+  assert.match(home, /First preseason scrimmages:/);
+});
+
 test('a scoreboard opened before kickoff keeps checking for the live transition', () => {
   const scoreboard = readFileSync('src/components/Scoreboard.tsx', 'utf8');
   assert.match(scoreboard, /hasLiveGames \? 30000 : 60000/);

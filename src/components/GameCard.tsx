@@ -61,6 +61,9 @@ export default function GameCard({ game, onClick }: GameCardProps) {
   const downDistance = situation?.down && situation?.distance
     ? `${situation.down}${situation.down === 1 ? 'st' : situation.down === 2 ? 'nd' : situation.down === 3 ? 'rd' : 'th'} & ${situation.distance}`
     : null;
+  const accessibleState = showScore
+    ? `${state.label}. ${game.awayTeam.name} ${score(game.awayScore, true)}, ${game.homeTeam.name} ${score(game.homeScore, true)}.`
+    : `${state.label}. ${game.awayTeam.name} at ${game.homeTeam.name}. ${scheduleLine(game, false)}.`;
 
   return (
     <button
@@ -69,7 +72,7 @@ export default function GameCard({ game, onClick }: GameCardProps) {
       className={`group w-full overflow-hidden rounded-2xl border bg-gray-900 text-left shadow-lg transition hover:-translate-y-0.5 hover:border-orange-400/70 hover:shadow-orange-950/30 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 focus:ring-offset-gray-950 ${
         state.live ? 'border-red-500/70 shadow-red-950/30' : 'border-gray-700'
       }`}
-      aria-label={`Open ${game.awayTeam.name} at ${game.homeTeam.name} game details`}
+      aria-label={`${accessibleState} Open game details.`}
     >
       <div className="flex min-h-11 items-center justify-between border-b border-gray-800 bg-gray-950/70 px-4 py-2">
         <div className="flex min-w-0 items-center gap-2">
@@ -135,7 +138,7 @@ export default function GameCard({ game, onClick }: GameCardProps) {
 
         <div className="space-y-1.5 border-t border-gray-800 pt-3 text-xs text-gray-400">
           <p className="flex items-center gap-2"><Clock3 className="h-3.5 w-3.5 text-orange-400" /> {scheduleLine(game, showScore)}</p>
-          {(game.venue || game.city) && <p className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5 text-orange-400" /> <span className="truncate">{[game.venue, game.city].filter(Boolean).join(' · ')}</span></p>}
+          <p className="flex items-center gap-2"><MapPin className={`h-3.5 w-3.5 ${game.venue || game.city ? 'text-orange-400' : 'text-gray-600'}`} /> <span className="truncate">{game.venue || game.city ? [game.venue, game.city].filter(Boolean).join(' · ') : 'Venue not published by source'}</span></p>
           {game.broadcast && <p className="flex items-center gap-2"><Tv className="h-3.5 w-3.5 text-orange-400" /> {game.broadcast}</p>}
         </div>
       </div>

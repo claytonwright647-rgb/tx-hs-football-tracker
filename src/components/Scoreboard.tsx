@@ -22,6 +22,7 @@ interface GamesApiResponse {
   error?: string;
   requestedDate?: string | null;
   scheduleDate?: string | null;
+  stale?: boolean;
 }
 
 function chicagoToday(): string {
@@ -95,10 +96,16 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
       }
     } catch (err) {
       console.error('Error fetching games:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load games');
-      setGames([]);
-      setSourceStatus('request_failed');
-      setSourceMessage(null);
+      if (silent) {
+        setError(null);
+        setSourceStatus('stale_last_known_good');
+        setSourceMessage('The official source could not be refreshed. Showing the last verified slate while the tracker retries.');
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to load games');
+        setGames([]);
+        setSourceStatus('request_failed');
+        setSourceMessage(null);
+      }
     } finally {
       if (!silent) setLoading(false);
     }
@@ -116,7 +123,8 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
       g.status === 'in_progress' || g.status === 'halftime'
     );
     const pollingPhase = ['fall_camp', 'scrimmages', 'regular_season', 'playoffs', 'state_championships'].includes(phase || '');
-    if (browseDate || (!hasLiveGames && !pollingPhase)) return;
+    const isNonTodayBrowse = browseDate !== null && browseDate !== chicagoToday();
+    if (isNonTodayBrowse || (!hasLiveGames && !pollingPhase)) return;
 
     const interval = setInterval(() => void fetchGames(true), hasLiveGames ? 30000 : 60000);
     return () => clearInterval(interval);
@@ -244,6 +252,13 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
         </div>
       )}
 
+      {!loading && (sourceStatus === 'stale_last_known_good' || sourceStatus === 'available_partial') && (
+        <div role="status" className="rounded-xl border border-amber-500/35 bg-amber-950/25 px-4 py-3 text-sm text-amber-100">
+          <span className="font-bold">Official source update incomplete:</span>{' '}
+          {sourceMessage || 'Showing the latest verified games while the tracker retries.'}
+        </div>
+      )}
+
       {/* Classification Cards Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {CLASSIFICATIONS.map((classification) => (
@@ -283,7 +298,13 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
           )}
           {lastUpdated && (
             <span className="text-gray-500 text-xs ml-4">
-              Updated: {lastUpdated.toLocaleTimeString()}
+              Official source checked: {lastUpdated.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                second: '2-digit',
+                timeZone: 'America/Chicago',
+                timeZoneName: 'short',
+              })}
             </span>
           )}
         </div>
@@ -375,12 +396,9 @@ export default function Scoreboard({ selectedClassification }: ScoreboardProps) 
           awayTeam: selectedGame.awayTeam.name,
           homeScore: selectedGame.homeScore,
           awayScore: selectedGame.awayScore,
-          homeAbbrev: selectedGame.homeTeam.name.substring(0, 3).toUpperCase(),
-          awayAbbrev: selectedGame.awayTeam.name.substring(0, 3).toUpperCase(),
           homeColor: selectedGame.homeTeam.colors?.primary?.replace('#', ''),
           awayColor: selectedGame.awayTeam.colors?.primary?.replace('#', ''),
-          status: selectedGame.status === 'in_progress' || selectedGame.status === 'halftime' ? 'in' 
-            : selectedGame.status === 'final' ? 'final' : 'scheduled',
+          status: selectedGame.status,
           venue: selectedGame.venue,
           date: selectedGame.date,
           time: selectedGame.time,

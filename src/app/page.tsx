@@ -32,10 +32,11 @@ export default function Home() {
               The road to the 2026 State Championships begins now.
             </p>
 
+            <p className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-blue-300">Regular season begins in</p>
             <HeroCountdown targetDate={`${SEASON_INFO.regularSeasonStart}T19:00:00-05:00`} />
 
             <p className="text-gray-400 text-sm">
-              Kickoff set for <span className="text-white font-bold">{new Date(`${SEASON_INFO.regularSeasonStart}T12:00:00-05:00`).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'America/Chicago' })}</span> across the Lone Star State.
+              First preseason scrimmages: <span className="font-bold text-sky-200">Thursday, August 13</span>. Regular-season kickoff begins <span className="text-white font-bold">{new Date(`${SEASON_INFO.regularSeasonStart}T12:00:00-05:00`).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'America/Chicago' })}</span>.
             </p>
           </div>
         </div>
@@ -76,7 +77,7 @@ export default function Home() {
         {/* Footer */}
         <footer className="text-center py-8 border-t border-gray-800">
           <p className="text-gray-500 text-sm mb-2">
-            Data sourced from UIL, MaxPreps, and Dave Campbell&apos;s Texas Football
+            Schedule and score data: MaxPreps UIL feed. Season dates and rules: UIL.
           </p>
           <div className="flex items-center justify-center gap-4">
             <a

@@ -369,7 +369,8 @@ After implementing features:
 ```bash
 npm run build
 npm run test
-vercel deploy --prod
+# After green CI, deploy the exact commit as an immutable Vultr VPS release.
+# Verify https://txhs.wright-sports.org/api/health after the atomic switch.
 ```
 
 ## Documentation

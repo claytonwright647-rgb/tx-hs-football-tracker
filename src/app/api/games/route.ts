@@ -13,7 +13,8 @@ import { SEASON_INFO } from '@/lib/constants';
 // Cache each browsed date independently so navigating the schedule cannot
 // serve a different day's games from the one-minute live cache.
 const gamesCache = new Map<string, { games: LiveGame[]; timestamp: number }>();
-const CACHE_TTL = 60 * 1000; // 1 minute cache for live updates
+const SCHEDULE_CACHE_TTL = 60 * 1000;
+const LIVE_CACHE_TTL = 30 * 1000;
 
 function isValidScheduleDate(value: string | null): value is string {
   if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
@@ -128,7 +129,13 @@ function matchesClassification(game: LiveGame, classification: string): boolean 
 }
 
 // Fetch all games across classifications
-async function fetchAllGames(phase: SeasonPhase, requestedDate?: string): Promise<LiveGame[]> {
+interface OfficialGamesResult {
+  games: LiveGame[];
+  failedSources: number;
+  sourceCount: number;
+}
+
+async function fetchAllGames(phase: SeasonPhase, requestedDate?: string): Promise<OfficialGamesResult> {
   const classifications = getUILClassifications();
   const allGames: LiveGame[] = [];
   
@@ -136,10 +143,10 @@ async function fetchAllGames(phase: SeasonPhase, requestedDate?: string): Promis
   const scorePromises = classifications.map(async (classification) => {
     try {
       const games = await fetchScores(classification, undefined, requestedDate);
-      return games.map(g => convertToLiveGame(g));
+      return { ok: true as const, games: games.map(g => convertToLiveGame(g)) };
     } catch (e) {
       console.error(`Error fetching ${classification} scores:`, e);
-      return [];
+      return { ok: false as const, games: [] as LiveGame[] };
     }
   });
 
@@ -150,10 +157,10 @@ async function fetchAllGames(phase: SeasonPhase, requestedDate?: string): Promis
         const division = div === 'D1' ? 'Division I' : 'Division II';
         try {
           const games = await fetchPlayoffBracket(baseClass, division);
-          return games.map(g => convertToLiveGame({ ...g, classification }));
+          return { ok: true as const, games: games.map(g => convertToLiveGame({ ...g, classification })) };
         } catch (e) {
           console.error(`Error fetching ${classification} playoffs:`, e);
-          return [];
+          return { ok: false as const, games: [] as LiveGame[] };
         }
       })
     : [];
@@ -164,8 +171,12 @@ async function fetchAllGames(phase: SeasonPhase, requestedDate?: string): Promis
   ]);
 
   // Combine all games
-  scoreResults.forEach(games => allGames.push(...games));
-  playoffResults.forEach(games => allGames.push(...games));
+  const sourceResults = [...scoreResults, ...playoffResults];
+  sourceResults.forEach(result => allGames.push(...result.games));
+  const failedSources = sourceResults.filter(result => !result.ok).length;
+  if (sourceResults.length > 0 && failedSources === sourceResults.length) {
+    throw new Error('Every official scoreboard request failed');
+  }
 
   // Remove duplicates by gameId
   const validGames = allGames.filter((game) => game.homeTeam.name && game.awayTeam.name && game.date);
@@ -175,7 +186,7 @@ async function fetchAllGames(phase: SeasonPhase, requestedDate?: string): Promis
     return firstTime - secondTime || first.awayTeam.name.localeCompare(second.awayTeam.name);
   });
 
-  return uniqueGames;
+  return { games: uniqueGames, failedSources, sourceCount: sourceResults.length };
 }
 
 export async function GET(request: Request) {
@@ -197,6 +208,7 @@ export async function GET(request: Request) {
 
   const requestedDate = dateParam || undefined;
   const cacheKey = requestedDate || 'next-published';
+  const lastKnownGood = gamesCache.get(cacheKey);
 
   try {
     const now = new Date();
@@ -218,8 +230,10 @@ export async function GET(request: Request) {
     }
 
     // Check cache
-    const cachedResult = gamesCache.get(cacheKey);
-    if (!forceRefresh && cachedResult && Date.now() - cachedResult.timestamp < CACHE_TTL) {
+    const cachedResult = lastKnownGood;
+    const cachedSlateIsLive = cachedResult?.games.some(game => game.status === 'in_progress' || game.status === 'halftime') === true;
+    const cacheTtl = cachedSlateIsLive ? LIVE_CACHE_TTL : SCHEDULE_CACHE_TTL;
+    if (!forceRefresh && cachedResult && Date.now() - cachedResult.timestamp < cacheTtl) {
       let games = [...cachedResult.games];
       
       // Apply filters
@@ -252,7 +266,8 @@ export async function GET(request: Request) {
     }
 
     // Fetch fresh data
-    const allGames = await fetchAllGames(phase, requestedDate);
+    const officialResult = await fetchAllGames(phase, requestedDate);
+    const allGames = officialResult.games;
     
     // Update cache
     gamesCache.set(cacheKey, {
@@ -281,22 +296,50 @@ export async function GET(request: Request) {
       cached: false,
       requestedDate: requestedDate || null,
       scheduleDate: games[0]?.date || requestedDate || null,
-      sourceStatus: games.length > 0 ? 'available' : (livePollingActive ? 'current_source_empty' : 'schedule_source_empty'),
+      sourceStatus: officialResult.failedSources > 0
+        ? 'available_partial'
+        : games.length > 0
+          ? 'available'
+          : (livePollingActive ? 'current_source_empty' : 'schedule_source_empty'),
       phase,
-      message: games.length > 0
-        ? undefined
+      message: officialResult.failedSources > 0
+        ? `${officialResult.failedSources} of ${officialResult.sourceCount} official classification requests failed; showing the verified games that were returned.`
+        : games.length > 0
+          ? undefined
         : livePollingActive
           ? 'The current official source returned no published games for this filter.'
           : 'The current official schedule source returned no published games for this filter.',
     });
   } catch (error) {
     console.error('API Error:', error);
+    if (lastKnownGood?.games.length) {
+      let games = [...lastKnownGood.games];
+      if (classification) games = games.filter((game) => matchesClassification(game, classification));
+      if (status) games = games.filter((game) => game.status === status);
+      if (isPlayoff === 'true') games = games.filter((game) => game.isPlayoff);
+
+      return NextResponse.json({
+        success: true,
+        count: games.length,
+        games,
+        timestamp: new Date(lastKnownGood.timestamp).toISOString(),
+        checkedAt: new Date().toISOString(),
+        cached: true,
+        stale: true,
+        requestedDate: requestedDate || null,
+        scheduleDate: games[0]?.date || requestedDate || null,
+        sourceStatus: 'stale_last_known_good',
+        phase: getCurrentPhase(new Date()),
+        message: 'The official source could not be refreshed. Showing the last verified slate while the tracker retries.',
+      });
+    }
+
     return NextResponse.json({
       success: false,
       error: 'Failed to fetch games',
-      message: error instanceof Error ? error.message : 'Unknown error',
+      message: 'The official source could not be reached and no previously verified slate is available.',
       games: [],
       timestamp: new Date().toISOString(),
-    }, { status: 500 });
+    }, { status: 503 });
   }
 }

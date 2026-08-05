@@ -133,7 +133,7 @@ export default function SeasonIntelligence() {
         {/* Countdown */}
         {status.showCountdown && status.daysUntilSeason > 0 && (
           <div className="text-right">
-            <div className="text-xs text-gray-400 uppercase tracking-wide">Until Kickoff</div>
+            <div className="text-xs text-gray-400 uppercase tracking-wide">Until regular season</div>
             <div className="text-2xl font-mono font-bold text-white">{timeUntil}</div>
           </div>
         )}

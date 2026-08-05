@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { FootballField } from './fields';
 import GameHighlights from './GameHighlights';
@@ -55,19 +55,53 @@ function scheduleLabel(date?: string, time?: string, hasPublishedTime = false): 
 }
 
 export default function GameDetailModal({ isOpen, onClose, game }: GameDetailModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
   useEffect(() => {
     if (!isOpen) return;
+    previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    closeButtonRef.current?.focus();
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
+      if (event.key === 'Tab') {
+        const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
+        );
+        if (!focusable?.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previousFocusRef.current?.focus();
+    };
   }, [isOpen, onClose]);
 
   if (!isOpen || !game) return null;
 
-  const isLive = game.status === 'in' || game.status === 'live';
+  const isLive = ['in', 'live', 'in_progress', 'halftime'].includes(game.status || '');
+  const isHalftime = game.status === 'halftime';
   const isFinal = game.status === 'final' || game.status === 'post';
+  const isSixMan = /\b1A\b/.test(game.classification || '');
+  const hasCompleteLiveSituation = isLive
+    && Boolean(game.situation?.possession)
+    && Number.isInteger(game.situation?.down)
+    && Number.isFinite(game.situation?.distance)
+    && Number.isFinite(game.situation?.yardsToEndzone);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -75,7 +109,7 @@ export default function GameDetailModal({ isOpen, onClose, game }: GameDetailMod
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
       
       {/* Modal */}
-      <div role="dialog" aria-modal="true" aria-labelledby="game-detail-title" className="relative bg-gray-900 border border-gray-700 w-full max-w-3xl max-h-[90vh] rounded-2xl overflow-hidden flex flex-col">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="game-detail-title" className="relative bg-gray-900 border border-gray-700 w-full max-w-3xl max-h-[90vh] rounded-2xl overflow-hidden flex flex-col">
         {/* Header */}
         <div className="bg-gradient-to-r from-orange-600/20 to-gray-900 p-4 border-b border-gray-700 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -85,14 +119,14 @@ export default function GameDetailModal({ isOpen, onClose, game }: GameDetailMod
             {isLive && (
               <span className="flex items-center gap-1 text-xs text-red-500">
                 <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                LIVE
+                {isHalftime ? 'HALFTIME' : 'LIVE'}
               </span>
             )}
             {isFinal && (
               <span className="text-xs text-gray-400">FINAL</span>
             )}
           </div>
-          <button type="button" onClick={onClose} aria-label="Close game details" className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
+          <button ref={closeButtonRef} type="button" onClick={onClose} aria-label="Close game details" className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
             <X className="w-5 h-5 text-gray-400" />
           </button>
         </div>
@@ -101,27 +135,25 @@ export default function GameDetailModal({ isOpen, onClose, game }: GameDetailMod
         <div className="p-6 bg-gray-800/30">
           <h2 id="game-detail-title" className="sr-only">{game.awayTeam} at {game.homeTeam}</h2>
           {/* Venue */}
-          {game.venue && (
-            <div className="text-center text-sm text-gray-400 mb-4">
-              🏟️ {game.venue}
-            </div>
-          )}
+          <div className="text-center text-sm text-gray-400 mb-4">
+            🏟️ {game.venue || 'Venue not published by source'}
+          </div>
           
           {/* Teams & Score */}
-          <div className="flex items-center justify-center gap-8">
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-8">
             {/* Away Team */}
             <div className="text-center">
               <div className="text-lg font-bold text-white">{game.awayTeam}</div>
-              <div className="text-xs text-gray-500">{game.awayAbbrev}</div>
+              {game.awayAbbrev && <div className="text-xs text-gray-500">{game.awayAbbrev}</div>}
             </div>
             
             {/* Score */}
             <div className="flex items-center gap-4">
-              <span className="text-5xl font-bold text-white">
+              <span className="text-4xl font-bold text-white sm:text-5xl">
                 {game.awayScore ?? '-'}
               </span>
               <span className="text-2xl text-gray-600">-</span>
-              <span className="text-5xl font-bold text-white">
+              <span className="text-4xl font-bold text-white sm:text-5xl">
                 {game.homeScore ?? '-'}
               </span>
             </div>
@@ -129,7 +161,7 @@ export default function GameDetailModal({ isOpen, onClose, game }: GameDetailMod
             {/* Home Team */}
             <div className="text-center">
               <div className="text-lg font-bold text-white">{game.homeTeam}</div>
-              <div className="text-xs text-gray-500">{game.homeAbbrev}</div>
+              {game.homeAbbrev && <div className="text-xs text-gray-500">{game.homeAbbrev}</div>}
             </div>
           </div>
 
@@ -148,19 +180,29 @@ export default function GameDetailModal({ isOpen, onClose, game }: GameDetailMod
 
         {/* Football Field Visualization */}
         <div className="p-4 border-t border-gray-700">
-          <FootballField
-            situation={game.situation}
-            homeTeam={{
-              abbreviation: game.homeAbbrev || game.homeTeam.substring(0, 3).toUpperCase(),
-              color: game.homeColor,
-              name: game.homeTeam
-            }}
-            awayTeam={{
-              abbreviation: game.awayAbbrev || game.awayTeam.substring(0, 3).toUpperCase(),
-              color: game.awayColor,
-              name: game.awayTeam
-            }}
-          />
+          {isSixMan ? (
+            <div className="rounded-lg border border-sky-500/25 bg-sky-950/20 px-4 py-5 text-center text-sm text-sky-100">
+              Six-man field visualization is unavailable until the source provides format-aware 80-yard field position. No 11-man field marker is substituted.
+            </div>
+          ) : hasCompleteLiveSituation ? (
+            <FootballField
+              situation={game.situation}
+              homeTeam={{
+                abbreviation: game.homeAbbrev || 'HOME',
+                color: game.homeColor,
+                name: game.homeTeam
+              }}
+              awayTeam={{
+                abbreviation: game.awayAbbrev || 'AWAY',
+                color: game.awayColor,
+                name: game.awayTeam
+              }}
+            />
+          ) : (
+            <div className="rounded-lg border border-gray-700 bg-gray-950/60 px-4 py-5 text-center text-sm text-gray-300">
+              Field position unavailable — the official source has not published complete possession, down, distance, and location data.
+            </div>
+          )}
         </div>
 
         {/* Game Highlights Section - Only show for completed games */}
@@ -177,10 +219,10 @@ export default function GameDetailModal({ isOpen, onClose, game }: GameDetailMod
         <div className="p-4 border-t border-gray-700 bg-gray-800/50">
           <p className="text-center text-xs text-gray-500">
             {isLive 
-              ? 'Live game data updates automatically' 
+              ? 'Live scores update automatically. Clock, possession, down, distance, and field position appear only when the official source reports them.'
               : isFinal 
                 ? 'Game completed' 
-                : 'Field visualization will show live data when game starts'
+                : 'Field position appears only when the official source publishes possession, down, distance, and location.'
             }
           </p>
         </div>

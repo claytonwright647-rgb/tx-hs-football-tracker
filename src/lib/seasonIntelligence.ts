@@ -317,8 +317,10 @@ export function getDaysUntil(target: 'schedule_release' | 'season_start' | 'firs
       targetDate = new Date(config.scheduleReleaseStart + 'T00:00:00');
       break;
     case 'season_start':
-    case 'first_game':
       targetDate = new Date(config.regularSeasonStart + 'T00:00:00');
+      break;
+    case 'first_game':
+      targetDate = new Date(config.scrimmagesStart + 'T00:00:00');
       break;
     case 'next_season':
       const nextYear = config.year + 1;
@@ -386,7 +388,7 @@ export function getSeasonStatusMessage(): string {
     }
     case 'fall_camp': {
       const days = getDaysUntil('first_game');
-      return `${config.description} First games in ${days} days!`;
+      return `${config.description} First preseason scrimmages in ${days} days; regular season starts August 27.`;
     }
     case 'scrimmages':
       return config.description;

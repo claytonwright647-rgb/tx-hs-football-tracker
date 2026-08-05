@@ -4,6 +4,17 @@
 const MAXPREPS_BASE_URL = 'https://www.maxpreps.com';
 const STATE = 'tx';
 
+function chicagoDateKey(now = new Date()): string {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Chicago',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(now);
+  const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
 // Cache for team logos (team name -> logo URL)
 const teamLogoCache: Map<string, string | null> = new Map();
 
@@ -393,19 +404,19 @@ export async function fetchScores(
       },
       // The default scoreboard is the live path. Explicit historical/future
       // dates can use the longer schedule cache.
-      next: { revalidate: requestedDate ? 300 : 30 },
+      next: { revalidate: requestedDate && requestedDate !== chicagoDateKey() ? 300 : 30 },
+      signal: AbortSignal.timeout(15_000),
     });
 
     if (!response.ok) {
-      console.error(`MaxPreps fetch failed: ${response.status}`);
-      return [];
+      throw new Error(`MaxPreps scoreboard returned HTTP ${response.status}`);
     }
 
     const html = await response.text();
     return parseMaxPrepsScoreboard(html, classification, week || 0);
   } catch (error) {
     console.error('MaxPreps fetch error:', error);
-    return [];
+    throw error instanceof Error ? error : new Error('MaxPreps scoreboard request failed');
   }
 }
 

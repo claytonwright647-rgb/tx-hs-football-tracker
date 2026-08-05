@@ -88,6 +88,22 @@ test('score-only live cards explain which detailed facts the source does not pro
   assert.match(gameCard, /Live score only — detailed clock, possession, field position, and play-by-play are unavailable/);
 });
 
+test('official source outages preserve last-known-good games instead of becoming an empty slate', () => {
+  assert.match(maxpreps, /AbortSignal\.timeout\(15_000\)/);
+  assert.match(maxpreps, /throw new Error\(`MaxPreps scoreboard returned HTTP/);
+  assert.doesNotMatch(maxpreps, /MaxPreps fetch failed:[\s\S]{0,160}return \[\]/);
+  assert.match(gamesApi, /Every official scoreboard request failed/);
+  assert.match(gamesApi, /sourceStatus: 'stale_last_known_good'/);
+  assert.match(gamesApi, /last verified slate while the tracker retries/);
+  assert.match(scoreboard, /sourceStatus === 'stale_last_known_good'/);
+});
+
+test('today browsing keeps polling and uses live-source cache timing', () => {
+  assert.match(scoreboard, /browseDate !== chicagoToday\(\)/);
+  assert.match(gamesApi, /const LIVE_CACHE_TTL = 30 \* 1000/);
+  assert.match(maxpreps, /requestedDate !== chicagoDateKey\(\) \? 300 : 30/);
+});
+
 test('game details format published kickoffs in Central time instead of exposing raw timestamps', () => {
   assert.match(gameDetailModal, /scheduleLabel\(game\.date, game\.time, game\.hasPublishedTime\)/);
   assert.match(gameDetailModal, /timeZone: 'America\/Chicago'/);
@@ -103,6 +119,19 @@ test('preseason scrimmages and unknown kickoff times are labeled truthfully', ()
   assert.match(scoreboard, /Preseason scrimmages:/);
   assert.match(scoreboard, /do not count in team records/);
   assert.doesNotMatch(gameCard, /Boolean\(game\.time\?\.includes\('T'\)\)/);
+});
+
+test('presentation labels disclose source, venue, six-man, and live-data limitations', () => {
+  assert.match(home, /Schedule and score data: MaxPreps UIL feed\. Season dates and rules: UIL\./);
+  assert.doesNotMatch(home, /Data sourced from UIL, MaxPreps, and Dave Campbell/);
+  assert.match(gameCard, /Venue not published by source/);
+  assert.match(gameDetailModal, /Live scores update automatically/);
+  assert.match(gameDetailModal, /Six-man field visualization is unavailable/);
+  assert.match(gameDetailModal, /closeButtonRef/);
+  assert.match(gameDetailModal, /previousFocusRef/);
+  assert.match(gameDetailModal, /dialogRef/);
+  assert.match(gameDetailModal, /document\.body\.style\.overflow = 'hidden'/);
+  assert.doesNotMatch(scoreboard, /substring\(0, 3\)\.toUpperCase/);
 });
 
 test('team pages use the direct official feed and contain no Firecrawl dependency', () => {
