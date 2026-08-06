@@ -3,15 +3,16 @@
  * Proxies to main Brain AI system and adds HS Football context
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import { sportsOrigin } from '@/lib/trackerOrigins';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Fetch status from main dashboard Brain AI
-    const mainDashboardStatus = await fetch('https://www.wright-sports.com/api/ai-status', {
+    const mainDashboardStatus = await fetch(`${sportsOrigin}/api/ai-status`, {
       headers: {
         'x-hs-football-context': 'true',
       },

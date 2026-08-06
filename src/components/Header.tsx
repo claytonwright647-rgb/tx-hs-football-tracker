@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { SEASON_INFO, NEXT_SEASON, LAST_SEASON } from '@/lib/constants';
+import { SEASON_INFO, NEXT_SEASON } from '@/lib/constants';
+import { getCurrentPhase, getPhaseConfig } from '@/lib/seasonIntelligence';
 import SearchBar from './SearchBar';
 import SeasonCountdown from './SeasonCountdown';
 import { AIStatusButton } from './AIStatusButton';
@@ -20,6 +21,7 @@ export default function Header() {
   const [currentTime, setCurrentTime] = useState<string>('');
   const [currentDate, setCurrentDate] = useState<string>('');
   const pathname = usePathname();
+  const currentPhase = getPhaseConfig(getCurrentPhase());
 
   // Next season kickoff date: August 27, 2026
   const nextSeasonKickoff = new Date('2026-08-27T19:00:00-05:00');
@@ -40,7 +42,7 @@ export default function Header() {
         year: 'numeric',
         timeZone: 'America/Chicago',
       };
-      setCurrentTime(now.toLocaleTimeString('en-US', timeOptions) + ' CST');
+      setCurrentTime(now.toLocaleTimeString('en-US', { ...timeOptions, timeZoneName: 'short' }));
       setCurrentDate(now.toLocaleDateString('en-US', dateOptions));
     };
 
@@ -60,7 +62,7 @@ export default function Header() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4 pb-4 border-b border-gray-800">
           <div className="text-center sm:text-left">
             <span className="text-gray-400 text-sm">
-              {LAST_SEASON.displayYear} Season Complete! 🏆
+              {NEXT_SEASON.displayYear} {currentPhase.displayName} · {currentPhase.description}
             </span>
           </div>
           <SeasonCountdown 
@@ -95,6 +97,8 @@ export default function Header() {
             </div>
             <AIStatusButton />
             <button
+              type="button"
+              aria-label="Refresh tracker"
               onClick={() => window.location.reload()}
               className="flex items-center gap-1 px-3 py-2 bg-orange-600 hover:bg-orange-500 rounded-lg transition-colors text-white font-semibold text-sm"
             >
@@ -126,7 +130,7 @@ export default function Header() {
           <div className="flex-1" />
           
           <a
-            href="https://www.wright-sports.com"
+            href="https://wright-sports.org"
             target="_blank"
             rel="noopener noreferrer"
             className="px-3 py-1.5 rounded-lg bg-blue-600/30 hover:bg-blue-600/50 text-blue-400 hover:text-blue-300 transition-colors border border-blue-600/50 hover:border-blue-500 font-medium text-sm"

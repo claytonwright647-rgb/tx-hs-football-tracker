@@ -4,11 +4,11 @@ import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: "Texas HS Football Tracker | UIL & TAPPS",
-  description: "Live scores, standings, and playoff brackets for Texas high school football. Track UIL 6A through 1A Six-Man and TAPPS divisions.",
+  description: "Officially sourced Texas high school football game center, live scores, schedules, and current-season publication status for UIL and TAPPS.",
   keywords: "Texas high school football, UIL football, TAPPS football, Texas playoffs, six-man football",
   openGraph: {
     title: "Texas HS Football Tracker",
-    description: "Live scores and standings for 1,400+ Texas high school football teams",
+    description: "Officially sourced live scores, schedules, and current-season status for Texas high school football",
     type: "website",
   },
 };

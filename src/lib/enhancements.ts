@@ -236,7 +236,7 @@ export function calculateWinProbability(
   const baseProb = 0.5 + (scoreDiff * 0.02);
   const timeAdjustment = timeRemaining > 0 ? (600 - timeRemaining) / 600 : 1;
   
-  let homeProb = Math.min(0.95, Math.max(0.05, baseProb + (timeAdjustment * 0.1)));
+  const homeProb = Math.min(0.95, Math.max(0.05, baseProb + (timeAdjustment * 0.1)));
   
   return {
     home: homeProb,

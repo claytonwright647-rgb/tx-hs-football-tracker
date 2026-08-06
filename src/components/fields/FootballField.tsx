@@ -19,25 +19,44 @@ interface FootballFieldProps {
   };
   homeTeam?: { abbreviation: string; color?: string; name?: string };
   awayTeam?: { abbreviation: string; color?: string; name?: string };
+  format?: 'eleven-man' | 'six-man';
 }
 
-export function FootballField({ situation, homeTeam, awayTeam }: FootballFieldProps) {
-  const down = situation?.down || 0;
-  const distance = situation?.distance || 10;
-  const yardLine = situation?.yardLine || 50;
-  const yardsToEndzone = situation?.yardsToEndzone || 50;
-  const possession = situation?.possession;
-  const isRedZone = situation?.isRedZone || yardsToEndzone <= 20;
-  const hasLiveData = down > 0 && possession;
+export function FootballField({ situation, homeTeam, awayTeam, format = 'eleven-man' }: FootballFieldProps) {
+  const fieldLength = format === 'six-man' ? 80 : 100;
+  const standardFirstDownDistance = format === 'six-man' ? 15 : 10;
+  const down = Number(situation?.down);
+  const distance = Number(situation?.distance);
+  const yardsToEndzone = Number(situation?.yardsToEndzone);
+  const possession = situation?.possession?.trim() || '';
+  const possessionKey = possession.toLowerCase();
+  const isTeamMatch = (team?: FootballFieldProps['homeTeam']) => Boolean(team && [team.abbreviation, team.name]
+    .filter(Boolean)
+    .some((label) => String(label).trim().toLowerCase() === possessionKey));
+  const possessionSide = isTeamMatch(homeTeam) ? 'home' : isTeamMatch(awayTeam) ? 'away' : null;
+  const hasLiveData = Boolean(
+    possessionSide &&
+    Number.isInteger(down) && down >= 1 && down <= 4 &&
+    Number.isFinite(distance) && distance >= 0 && distance <= fieldLength &&
+    Number.isFinite(yardsToEndzone) && yardsToEndzone >= 0 && yardsToEndzone <= fieldLength
+  );
+  const isRedZone = hasLiveData && (situation?.isRedZone === true || yardsToEndzone <= 20);
   
   // Calculate ball position on the field (0-100%)
-  // yardsToEndzone: 50 = midfield, 20 = red zone, 1 = goal line
-  const ballPositionPercent = yardsToEndzone 
-    ? 100 - yardsToEndzone
-    : yardLine;
+  // Official yards-to-end-zone is scaled against the applicable 100- or 80-yard field.
+  const yardsToPercent = (yards: number) => (yards / fieldLength) * 100;
+  const ballPositionPercent = possessionSide === 'away'
+    ? 100 - yardsToPercent(yardsToEndzone)
+    : yardsToPercent(yardsToEndzone);
   
   // First down marker position
-  const firstDownPercent = Math.min(ballPositionPercent + (distance * 1), 100);
+  const firstDownPercent = possessionSide === 'away'
+    ? Math.min(ballPositionPercent + yardsToPercent(distance), 100)
+    : Math.max(ballPositionPercent - yardsToPercent(distance), 0);
+  const yardLines = Array.from(
+    { length: (fieldLength / 5) - 1 },
+    (_, index) => (index + 1) * 5
+  );
 
   return (
     <div className="w-full">
@@ -53,7 +72,12 @@ export function FootballField({ situation, homeTeam, awayTeam }: FootballFieldPr
                 {situation?.downDistanceText || `${down === 1 ? '1st' : down === 2 ? '2nd' : down === 3 ? '3rd' : '4th'} & ${distance}`}
               </div>
               <div className="text-sm text-gray-400">
-                {possession} • {yardsToEndzone ? `${yardsToEndzone} yards to endzone` : `at the ${yardLine}`}
+                {possession} • {yardsToEndzone} yards to end zone
+              </div>
+              <div className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-sky-300">
+                {format === 'six-man'
+                  ? `Six-man · ${fieldLength}-yard field · ${standardFirstDownDistance} yards for a first down`
+                  : 'Eleven-man · 100-yard field'}
               </div>
             </div>
             {isRedZone && (
@@ -63,7 +87,7 @@ export function FootballField({ situation, homeTeam, awayTeam }: FootballFieldPr
             )}
           </div>
         ) : (
-          <span className="text-gray-500">Field Position - No live game data</span>
+          <span className="text-gray-500">Field position unavailable — no complete official live situation</span>
         )}
       </div>
       
@@ -90,9 +114,10 @@ export function FootballField({ situation, homeTeam, awayTeam }: FootballFieldPr
         {/* Playing Field (80% of width between end zones) */}
         <div className="absolute left-[10%] right-[10%] top-0 bottom-0">
           {/* Yard lines - every 5 yards with numbers */}
-          {[5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95].map((yard) => {
-            const leftPercent = yard;
-            const displayYard = yard <= 50 ? yard : 100 - yard;
+          {yardLines.map((yard) => {
+            const leftPercent = yardsToPercent(yard);
+            const midfield = fieldLength / 2;
+            const displayYard = yard <= midfield ? yard : fieldLength - yard;
             
             return (
               <div key={yard} className="absolute top-0 bottom-0" style={{ left: `${leftPercent}%` }}>
@@ -152,17 +177,11 @@ export function FootballField({ situation, homeTeam, awayTeam }: FootballFieldPr
             </>
           )}
 
-          {/* Show default ball at 50 when no live data */}
-          {!hasLiveData && (
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl opacity-30">
-              🏈
-            </div>
-          )}
         </div>
       </div>
       
       {/* Legend */}
-      <div className="flex justify-center gap-4 mt-2 text-xs text-gray-500">
+      {hasLiveData && <div className="flex justify-center gap-4 mt-2 text-xs text-gray-500">
         <span className="flex items-center gap-1">
           <span className="w-3 h-1 bg-cyan-400 rounded" /> Line of Scrimmage
         </span>
@@ -172,7 +191,7 @@ export function FootballField({ situation, homeTeam, awayTeam }: FootballFieldPr
         <span className="flex items-center gap-1">
           🏈 Ball Position
         </span>
-      </div>
+      </div>}
     </div>
   );
 }

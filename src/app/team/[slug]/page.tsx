@@ -1,6 +1,5 @@
 import Header from '@/components/Header';
 import { POWERHOUSE_TEAMS, CLASSIFICATIONS } from '@/lib/constants';
-import { firecrawlClient } from '@/lib/firecrawl';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
@@ -27,19 +26,6 @@ export default async function TeamPage({ params }: PageProps) {
   }
 
   const classInfo = CLASSIFICATIONS.find(c => c.id === team.classification);
-
-  // --- Firecrawl Integration (Real Data) ---
-  const teamUrlName = team.name.toLowerCase().replace(/\s+/g, '-');
-  const maxPrepsUrl = `https://www.maxpreps.com/tx/arlington/${teamUrlName}-warriors/football/schedule/`;
-
-  // Real Extraction Attempt
-  const extraction = await firecrawlClient.extract<any[]>(maxPrepsUrl, {
-    prompt: `Extract the 2026 football schedule for ${team.name}.`,
-    schema: {}
-  });
-
-  const schedule = extraction.success && extraction.data ? extraction.data : [];
-  const error = extraction.error;
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950">
@@ -83,53 +69,15 @@ export default async function TeamPage({ params }: PageProps) {
           <div className="lg:col-span-2">
             <h2 className="text-2xl font-bold text-white mb-4">2026 Season Schedule</h2>
 
-            {schedule.length > 0 ? (
-              <div className="rounded-xl bg-gray-800/50 border border-gray-700 overflow-hidden">
-                <table className="w-full">
-                  <thead>
-                    <tr className="text-gray-400 text-sm border-b border-gray-700">
-                      <th className="px-4 py-3 text-left">Date</th>
-                      <th className="px-4 py-3 text-left">Opponent</th>
-                      <th className="px-4 py-3 text-center">Loc</th>
-                      <th className="px-4 py-3 text-right">Time/Result</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {schedule.map((game, idx) => (
-                      <tr key={idx} className="border-b border-gray-700/50 hover:bg-white/5">
-                        <td className="px-4 py-3 text-gray-400">{game.date}</td>
-                        <td className="px-4 py-3 text-white">
-                          {game.opponent}
-                          {game.isDistrict && <span className="ml-2 text-xs text-blue-400 bg-blue-900/30 px-1 rounded">Dist</span>}
-                        </td>
-                        <td className="px-4 py-3 text-center text-gray-400">{game.venue}</td>
-                        <td className="px-4 py-3 text-right font-mono text-gray-300">{game.time || game.result}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="p-8 rounded-xl bg-gray-800/30 border border-gray-700 text-center text-gray-400">
-                <p className="mb-2 text-xl">📅 Data Unavailable</p>
-                <p className="text-sm mb-4">
-                  {error === 'Missing API Key'
-                    ? 'System is ready but awaiting data connection.'
-                    : 'No 2026 schedule data found.'}
-                </p>
-                {error === 'Missing API Key' && (
-                  <div className="inline-block px-4 py-2 bg-red-900/20 border border-red-800 text-red-400 text-xs rounded">
-                    Missing FIRECRAWL_API_KEY
-                  </div>
-                )}
-              </div>
-            )}
-
-            {schedule.length > 0 && (
-              <div className="mt-2 text-xs text-gray-500 flex justify-between">
-                <span>Data source: MaxPreps (Via Firecrawl)</span>
-              </div>
-            )}
+            <div className="rounded-xl border border-gray-700 bg-gray-800/30 p-8 text-center text-gray-300">
+              <p className="mb-2 text-xl font-bold text-white">Official schedule on the Scoreboard</p>
+              <p className="mx-auto mb-5 max-w-xl text-sm text-gray-400">
+                Team schedules appear only when the tracker&apos;s direct MaxPreps UIL feed publishes the matchup. No third-party extraction service or guessed game is used.
+              </p>
+              <Link href="/scoreboard" className="inline-flex rounded-lg bg-orange-600 px-4 py-2 font-semibold text-white transition hover:bg-orange-500">
+                Open the live Scoreboard
+              </Link>
+            </div>
           </div>
 
 

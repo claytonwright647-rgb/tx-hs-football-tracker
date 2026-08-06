@@ -4,9 +4,9 @@
 Standalone Next.js 16 project tracking Texas UIL high school football, built December 22, 2025.
 
 ## Links
-- **Live Site**: https://tx-hs-football-tracker.vercel.app
+- **Live Site**: https://txhs.wright-sports.org
 - **GitHub**: https://github.com/claytonwright647-rgb/tx-hs-football-tracker
-- **Pro Sports Tracker**: https://wright-sports.com (bidirectional link in headers)
+- **Pro Sports Tracker**: https://wright-sports.org (bidirectional link in headers)
 
 ## Project Location
 `C:\Users\clayt\OneDrive\Documents\Google Scripts\tx-hs-football-tracker`
@@ -15,7 +15,7 @@ Standalone Next.js 16 project tracking Texas UIL high school football, built Dec
 - Next.js 16.1.0 with Turbopack
 - TypeScript
 - Tailwind CSS
-- Deployed on Vercel (auto-deploy on git push)
+- Deployed as reviewed immutable releases on the Vultr VPS
 
 ## Pages
 - `/` - Home page with season complete banner, 12 state champions, classification cards
@@ -92,7 +92,7 @@ tx-hs-football-tracker/
 cd "C:\Users\clayt\OneDrive\Documents\Google Scripts\tx-hs-football-tracker"
 npm run dev      # Start development server
 npm run build    # Build for production
-git push         # Auto-deploys to Vercel
+git push         # Runs GitHub CI; does not deploy production
 ```
 
 ---

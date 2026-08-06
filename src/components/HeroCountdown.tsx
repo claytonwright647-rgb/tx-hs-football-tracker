@@ -1,63 +1,53 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-
-interface TimeLeft {
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
-}
+import { useEffect, useState } from 'react';
 
 interface HeroCountdownProps {
-  targetDate: string; // ISO date string e.g. '2026-08-27T19:00:00-05:00'
+  targetDate: string;
+}
+
+function CountdownBlock({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="rounded-lg border border-gray-700 bg-gray-900/60 p-4 backdrop-blur-sm">
+      <span className="block text-3xl font-bold tabular-nums text-white">{value.toString().padStart(2, '0')}</span>
+      <span className="text-xs uppercase tracking-widest text-gray-400">{label}</span>
+    </div>
+  );
 }
 
 export default function HeroCountdown({ targetDate }: HeroCountdownProps) {
-  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
+  const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
-    const target = new Date(targetDate);
-
-    const calculate = (): TimeLeft | null => {
-      const diff = target.getTime() - Date.now();
-      if (diff <= 0) return null;
-      return {
-        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((diff / 1000 / 60) % 60),
-        seconds: Math.floor((diff / 1000) % 60),
-      };
+    const update = () => setNow(Date.now());
+    const initialFrame = window.requestAnimationFrame(update);
+    const timer = window.setInterval(update, 1000);
+    return () => {
+      window.cancelAnimationFrame(initialFrame);
+      window.clearInterval(timer);
     };
+  }, []);
 
-    setTimeLeft(calculate());
-    const timer = setInterval(() => setTimeLeft(calculate()), 1000);
-    return () => clearInterval(timer);
-  }, [targetDate]);
+  if (now === null) return null;
 
-  if (!timeLeft) {
-    return (
-      <div className="text-center text-green-400 font-bold text-2xl py-4">
-        🏈 Season Has Started!
-      </div>
-    );
+  const difference = new Date(targetDate).getTime() - now;
+  if (difference <= 0) {
+    return <div className="py-4 text-center text-2xl font-bold text-green-400">🏈 Season Has Started!</div>;
   }
 
-  const Block = ({ value, label }: { value: number; label: string }) => (
-    <div className="bg-gray-900/60 p-4 rounded-lg border border-gray-700 backdrop-blur-sm">
-      <span className="block text-3xl font-bold text-white tabular-nums">
-        {value.toString().padStart(2, '0')}
-      </span>
-      <span className="text-xs text-gray-400 uppercase tracking-widest">{label}</span>
-    </div>
-  );
+  const timeLeft = {
+    days: Math.floor(difference / 86_400_000),
+    hours: Math.floor((difference / 3_600_000) % 24),
+    minutes: Math.floor((difference / 60_000) % 60),
+    seconds: Math.floor((difference / 1000) % 60),
+  };
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto mb-8">
-      <Block value={timeLeft.days} label="Days" />
-      <Block value={timeLeft.hours} label="Hours" />
-      <Block value={timeLeft.minutes} label="Mins" />
-      <Block value={timeLeft.seconds} label="Secs" />
+    <div className="mx-auto mb-8 grid max-w-3xl grid-cols-2 gap-4 md:grid-cols-4">
+      <CountdownBlock value={timeLeft.days} label="Days" />
+      <CountdownBlock value={timeLeft.hours} label="Hours" />
+      <CountdownBlock value={timeLeft.minutes} label="Mins" />
+      <CountdownBlock value={timeLeft.seconds} label="Secs" />
     </div>
   );
 }

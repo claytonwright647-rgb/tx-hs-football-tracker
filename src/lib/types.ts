@@ -57,10 +57,21 @@ export interface Game {
   venue: string;
   city: string;
   date: string;
-  time: string;
+  time?: string;
+  hasPublishedTime?: boolean;
+  isScrimmage?: boolean;
   broadcast?: string;
-  isDistrictGame: boolean;
+  isDistrictGame?: boolean;
   week?: number;
+  sourceClassifications?: string[];
+  scheduleVerification?: {
+    status: 'confirmed' | 'conflict';
+    sourceName: string;
+    sourceUrl: string;
+    checkedAt: string;
+    note: string;
+    unconfirmedFields?: Array<'date' | 'time' | 'venue' | 'homeAway'>;
+  };
 }
 
 export interface LiveGame extends Game {

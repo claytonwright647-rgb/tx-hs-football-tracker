@@ -1,0 +1,55 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import test from 'node:test';
+
+import { shouldFetchLiveData, shouldFetchSchedules } from '../src/lib/seasonIntelligence.ts';
+
+const intelligence = readFileSync('src/lib/seasonIntelligence.ts', 'utf8');
+const header = readFileSync('src/components/Header.tsx', 'utf8');
+const home = readFileSync('src/app/page.tsx', 'utf8');
+
+test('August presentation comes from the shared season phase instead of an offseason label', () => {
+  assert.match(intelligence, /getSeasonConfig\(getCurrentSeasonYear\(now\)\)/);
+  assert.match(header, /getPhaseConfig\(getCurrentPhase\(\)\)/);
+  assert.match(home, /\{currentPhase\.displayName\}/);
+  assert.doesNotMatch(home, />Offseason Mode</);
+});
+
+test('public navigation uses the VPS domains', () => {
+  assert.match(header, /https:\/\/wright-sports\.org/);
+  assert.doesNotMatch(header, /wright-sports\.com/);
+  assert.doesNotMatch(home, /wright-sports\.com/);
+});
+
+test('live score polling follows the actual season phase', () => {
+  assert.equal(shouldFetchLiveData(new Date('2026-08-04T12:00:00-05:00')), false);
+  assert.equal(shouldFetchSchedules(new Date('2026-08-04T12:00:00-05:00')), true);
+  assert.equal(shouldFetchLiveData(new Date('2026-08-13T12:00:00-05:00')), true);
+  assert.equal(shouldFetchLiveData(new Date('2026-08-22T12:00:00-05:00')), true);
+  assert.equal(shouldFetchLiveData(new Date('2026-09-04T12:00:00-05:00')), true);
+});
+
+test('fall camp distinguishes first scrimmages from the regular-season countdown', () => {
+  assert.equal(shouldFetchLiveData(new Date('2026-08-13T12:00:00-05:00')), true);
+  assert.match(intelligence, /targetDate = new Date\(config\.scrimmagesStart/);
+  assert.match(intelligence, /First preseason scrimmages/);
+  assert.match(home, /Regular season begins in/);
+  assert.match(home, /First preseason scrimmages:/);
+});
+
+test('a scoreboard opened before kickoff keeps checking for the live transition', () => {
+  const scoreboard = readFileSync('src/components/Scoreboard.tsx', 'utf8');
+  assert.match(scoreboard, /hasLiveGames \? 30000 : 60000/);
+  assert.match(scoreboard, /fetchGames\(true\)/);
+  assert.match(scoreboard, /pollingPhase/);
+});
+
+test('games API checks published schedules before the live window and avoids year-round playoff polling', () => {
+  const gamesRoute = readFileSync('src/app/api/games/route.ts', 'utf8');
+
+  assert.match(gamesRoute, /sourceStatus:\s*'not_scheduled_for_current_phase'/);
+  assert.match(gamesRoute, /const schedulePollingActive = shouldFetchSchedules\(now\)/);
+  assert.match(gamesRoute, /if \(!livePollingActive && !schedulePollingActive\)/);
+  assert.match(gamesRoute, /schedule_source_empty/);
+  assert.match(gamesRoute, /\['playoffs', 'state_championships'\]\.includes\(phase\)/);
+});

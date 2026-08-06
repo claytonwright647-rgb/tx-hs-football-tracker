@@ -33,6 +33,9 @@ export function ELOStandingsColumn({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    setIsLoading(true);
+    setRating(null);
+
     const fetchRating = async () => {
       try {
         const response = await fetch('/api/ai-enhancements', {
@@ -62,7 +65,7 @@ export function ELOStandingsColumn({
     };
 
     fetchRating();
-  }, [teamId]);
+  }, [teamId, teamName]);
 
   const getStrengthColor = (strength: number) => {
     if (strength >= 80) return 'text-green-500';

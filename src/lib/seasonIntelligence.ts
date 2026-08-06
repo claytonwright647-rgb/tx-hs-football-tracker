@@ -47,19 +47,21 @@ export const SEASON_CONFIGS: Record<number, SeasonConfig> = {
     year: 2026,
     scheduleReleaseStart: '2026-06-01',
     fallCampStart: '2026-08-03',
-    scrimmagesStart: '2026-08-20',
+    // UIL permits first scrimmages Aug. 13 and the published scoreboard already
+    // contains that slate. Start the live window at the first verified event.
+    scrimmagesStart: '2026-08-13',
     regularSeasonStart: '2026-08-27',
     regularSeasonEnd: '2026-11-07',
     playoffsStart: '2026-11-12',
     stateChampionships: '2026-12-16',
     seasonEnd: '2026-12-19',
     startLookingForSchedules: '2026-06-01',
-    startLookingForScores: '2026-08-20',
+    startLookingForScores: '2026-08-13',
   },
 };
 
-export function getCurrentSeasonYear(): number {
-  const now = new Date();
+export function getCurrentSeasonYear(date?: Date): number {
+  const now = date || new Date();
   const month = now.getMonth(); // 0-indexed
   const year = now.getFullYear();
   
@@ -105,7 +107,7 @@ function generateSeasonConfig(year: number): SeasonConfig {
 
 export function getCurrentPhase(date?: Date): SeasonPhase {
   const now = date || new Date();
-  const config = getSeasonConfig();
+  const config = getSeasonConfig(getCurrentSeasonYear(now));
   
   const toDate = (str: string) => new Date(str + 'T00:00:00');
   
@@ -182,7 +184,7 @@ export const PHASE_CONFIGS: Record<SeasonPhase, PhaseConfig> = {
   schedule_watch: {
     phase: 'schedule_watch',
     displayName: 'Schedule Watch',
-    description: 'Looking for 2025 schedules...',
+    description: 'Looking for current-season schedules...',
     fetchSchedules: true,
     fetchScores: false,
     fetchRankings: true,
@@ -315,8 +317,10 @@ export function getDaysUntil(target: 'schedule_release' | 'season_start' | 'firs
       targetDate = new Date(config.scheduleReleaseStart + 'T00:00:00');
       break;
     case 'season_start':
-    case 'first_game':
       targetDate = new Date(config.regularSeasonStart + 'T00:00:00');
+      break;
+    case 'first_game':
+      targetDate = new Date(config.scrimmagesStart + 'T00:00:00');
       break;
     case 'next_season':
       const nextYear = config.year + 1;
@@ -354,14 +358,14 @@ export function getRefreshInterval(): number {
 }
 
 // Check if we should be actively fetching live game data
-export function shouldFetchLiveData(): boolean {
-  const phase = getCurrentPhase();
+export function shouldFetchLiveData(date?: Date): boolean {
+  const phase = getCurrentPhase(date);
   return ['scrimmages', 'regular_season', 'playoffs', 'state_championships'].includes(phase);
 }
 
 // Check if we should be looking for schedule updates
-export function shouldFetchSchedules(): boolean {
-  const phase = getCurrentPhase();
+export function shouldFetchSchedules(date?: Date): boolean {
+  const phase = getCurrentPhase(date);
   return ['schedule_watch', 'preseason', 'fall_camp', 'scrimmages', 'regular_season', 'playoffs', 'state_championships'].includes(phase);
 }
 
@@ -384,7 +388,7 @@ export function getSeasonStatusMessage(): string {
     }
     case 'fall_camp': {
       const days = getDaysUntil('first_game');
-      return `${config.description} First games in ${days} days!`;
+      return `${config.description} First preseason scrimmages in ${days} days; regular season starts August 27.`;
     }
     case 'scrimmages':
       return config.description;

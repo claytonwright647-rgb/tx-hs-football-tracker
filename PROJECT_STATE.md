@@ -7,7 +7,7 @@ The Texas High School Football Tracker is a web application providing live score
 * Framework: Next.js 16 (App Router)
 * Styling: Tailwind CSS
 * Language: TypeScript (100%)
-* Hosting: Vercel
+* Hosting: Vultr VPS (`https://txhs.wright-sports.org`)
 * Data: API routes with caching
 * Testing: Jest with TypeScript
 * AI: Custom ELO system, game analyzer, playoff predictor
@@ -39,9 +39,9 @@ npm test -- --coverage  # With coverage report
 
 **Deployment:**
 1. All changes committed to GitHub
-2. Vercel auto-deploys on push to main
-3. Health checks: `/api/monitoring/health`
-4. Error tracking: Automatic client/server-side
+2. GitHub CI validates the exact commit; a push does not deploy production
+3. Reviewed commits are installed as immutable VPS releases
+4. Health check: `https://txhs.wright-sports.org/api/health`
 
 **Key Components:**
 ```

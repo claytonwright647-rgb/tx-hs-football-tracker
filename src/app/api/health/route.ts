@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/team-service'
+import { deployedReleaseSha } from '@/lib/release-identity'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
+  const releaseSha = deployedReleaseSha()
+
   try {
     const teamCount = await prisma.team.count()
 
@@ -11,6 +14,7 @@ export async function GET() {
       status: 'ok',
       service: 'tx-hs-football-tracker',
       runtime: 'vps',
+      releaseSha,
       database: 'connected',
       teamCount,
       timestamp: new Date().toISOString(),
@@ -22,6 +26,7 @@ export async function GET() {
         status: 'error',
         service: 'tx-hs-football-tracker',
         runtime: 'vps',
+        releaseSha,
         database: 'unavailable',
         timestamp: new Date().toISOString(),
       },

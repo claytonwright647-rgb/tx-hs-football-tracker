@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Bot, CheckCircle, AlertTriangle, XCircle, Send, Clock, Zap, Brain, Play, Loader2, Circle, CheckCircle2, Wrench, RefreshCw, Activity, MessageCircle, Mic, MicOff, Calendar, Volume2 } from 'lucide-react';
+import { X, Send, Brain, Loader2, RefreshCw, Activity, MessageCircle, Mic, MicOff, Calendar } from 'lucide-react';
 
 interface Suggestion {
   id: number;
@@ -80,20 +80,15 @@ interface AIStatus {
 export function AIStatusButton() {
   const [status, setStatus] = useState<AIStatus | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchStatus();
-    const interval = setInterval(fetchStatus, 60000); // Refresh every minute
-    return () => clearInterval(interval);
-  }, []);
+  const [loading, setLoading] = useState(false);
 
   const fetchStatus = async () => {
+    setLoading(true);
     try {
       // Try HS Football specific endpoint first, fallback to main dashboard
       const endpoints = [
         '/api/ai-status',
-        'https://www.wright-sports.com/api/ai-status'
+        'https://wright-sports.org/api/ai-status'
       ];
       
       let data = null;
@@ -104,7 +99,7 @@ export function AIStatusButton() {
             data = await res.json();
             break;
           }
-        } catch (err) {
+        } catch {
           continue;
         }
       }
@@ -114,7 +109,7 @@ export function AIStatusButton() {
       } else {
         throw new Error('All endpoints failed');
       }
-    } catch (err) {
+    } catch {
       setStatus({
         status: 'error',
         statusEmoji: '❌',
@@ -145,7 +140,10 @@ export function AIStatusButton() {
   return (
     <>
       <button
-        onClick={() => setIsModalOpen(true)}
+        onClick={() => {
+          setIsModalOpen(true);
+          void fetchStatus();
+        }}
         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all border-2 ${getStatusColor()}`}
         title="AI Brain - Full Intelligence System"
       >
@@ -194,25 +192,11 @@ function AIStatusModal({
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
   
-  useEffect(() => {
-    fetchBrainState();
-    if (typeof window !== 'undefined') {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      setVoiceSupported(!!SpeechRecognition);
-    }
-    
-    // Add welcome message
-    setChatMessages([{
-      role: 'assistant',
-      content: '👋 Hey! I\'m your AI brain for Texas HS Football tracking. Ask me anything about James Martin HS Warriors, district standings, playoff scenarios, or any team in Texas!'
-    }]);
-  }, []);
-  
-  const fetchBrainState = async () => {
+  const fetchBrainState = useCallback(async () => {
     try {
       const endpoints = [
         '/api/brain-ai',
-        'https://www.wright-sports.com/api/ai-brain'
+        'https://wright-sports.org/api/ai-brain'
       ];
       
       for (const endpoint of endpoints) {
@@ -223,16 +207,29 @@ function AIStatusModal({
             setBrainState(data.state);
             break;
           }
-        } catch (error) {
+        } catch {
           continue;
         }
       }
     } catch (error) {
       console.error('Failed to fetch brain state:', error);
     }
-  };
+  }, []);
 
-  const handleChatSubmit = async (messageText?: string) => {
+  useEffect(() => {
+    void fetchBrainState();
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      setVoiceSupported(!!SpeechRecognition);
+    }
+
+    setChatMessages([{
+      role: 'assistant',
+      content: '👋 Hey! I\'m your AI brain for Texas HS Football tracking. Ask me anything about James Martin HS Warriors, district standings, playoff scenarios, or any team in Texas!'
+    }]);
+  }, [fetchBrainState]);
+
+  const handleChatSubmit = useCallback(async (messageText?: string) => {
     const text = messageText || chatInput.trim();
     if (!text || chatLoading) return;
     
@@ -261,12 +258,12 @@ function AIStatusModal({
       }]);
       
       fetchBrainState();
-    } catch (err) {
+    } catch {
       setChatMessages(prev => [...prev, { role: 'assistant', content: '❌ Connection error. Please try again.' }]);
     } finally {
       setChatLoading(false);
     }
-  };
+  }, [chatInput, chatLoading, fetchBrainState]);
 
   const startVoiceInput = useCallback(() => {
     if (!voiceSupported) return;
@@ -295,7 +292,7 @@ function AIStatusModal({
 
     recognitionRef.current = recognition;
     recognition.start();
-  }, [voiceSupported]);
+  }, [voiceSupported, handleChatSubmit]);
 
   const stopVoiceInput = useCallback(() => {
     if (recognitionRef.current) {
