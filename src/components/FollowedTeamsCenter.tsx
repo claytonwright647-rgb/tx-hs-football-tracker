@@ -21,6 +21,7 @@ type FollowedTeam = {
   overallRecord: string;
   games: FollowedGame[];
   sourceUrl?: string;
+  lastUpdated?: string;
 };
 
 type FollowedTeamsResponse = {
@@ -49,11 +50,27 @@ function rivalScore(game: FollowedGame): number | undefined {
   return game.score ? (game.homeAway === 'home' ? game.score.away : game.score.home) : undefined;
 }
 
+function centralTimestamp(value?: string): string {
+  if (!value) return 'Source time unavailable';
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return 'Source time unavailable';
+  return new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' }).format(parsed);
+}
+
 function FollowedTeamCard({ team }: { team: FollowedTeam }) {
   const context = teamContext[team.name] || { short: team.name.slice(0, 4).toUpperCase(), className: 'UIL', district: 'District pending', accent: 'border-gray-700 from-gray-900' };
-  const game = focusGame(team.games || []);
+  const games = team.games || [];
+  const game = focusGame(games);
   const live = game?.status === 'in';
   const final = game?.status === 'post' || Boolean(game?.result);
+  const gameIndex = game ? games.indexOf(game) : -1;
+  const completedGames = games.filter((item) => item.status === 'post' || Boolean(item.result)).length;
+  const remainingGames = Math.max(0, games.length - completedGames);
+  const seasonProgress = games.length ? Math.round((completedGames / games.length) * 100) : 0;
+  const nextUnplayedIndex = games.findIndex((item) => item.status !== 'post' && !item.result);
+  const roadStart = nextUnplayedIndex >= 0 ? nextUnplayedIndex : Math.max(0, games.length - 3);
+  const roadAhead = games.slice(roadStart, roadStart + 3);
+  const firstDistrict = games.find((item) => item.isDistrict);
   const mine = game ? teamScore(game) : undefined;
   const theirs = game ? rivalScore(game) : undefined;
   const rows = game
@@ -76,7 +93,15 @@ function FollowedTeamCard({ team }: { team: FollowedTeam }) {
       <div className="mx-4 mb-3 rounded-xl border border-white/10 bg-gray-950/60 px-3 py-2.5 text-xs text-gray-300">
         {live ? <p className="flex items-start gap-2 text-red-100"><Radio className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />{game.statusDetail || 'Live status verified by MaxPreps'}{game.score ? '' : ' · Score has not been reported.'}</p> : final ? <p>{game.result ? `${game.result} · ` : ''}Final result reported by MaxPreps.</p> : <p><strong className="text-white">What’s next:</strong> {team.name} {game.homeAway === 'away' ? 'travel to' : 'host'} {game.opponent}.</p>}
       </div>
-      <footer className="flex flex-wrap gap-2 border-t border-white/10 px-4 py-3 text-xs font-bold">{game.sourceUrl && <a href={game.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-blue-500/10 px-3 py-2 text-blue-200">Game details <ExternalLink className="h-3.5 w-3.5" /></a>}{game.watchUrl ? <a href={game.watchUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500/10 px-3 py-2 text-amber-200">Watch on NFHS <Tv className="h-3.5 w-3.5" /></a> : <span className="px-1 py-2 font-normal text-gray-500">Verified stream not listed yet</span>}</footer>
+      <div className="mx-4 mb-4 rounded-xl border border-white/10 bg-black/20 p-3">
+        <div className="flex items-center justify-between gap-3 text-xs"><span className="font-black uppercase tracking-wider text-orange-200">Season road</span><b className="text-white">{gameIndex >= 0 ? `Game ${gameIndex + 1} of ${games.length}` : `${games.length} games`}</b></div>
+        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-gray-800"><div className="h-full rounded-full bg-gradient-to-r from-orange-500 to-emerald-400" style={{ width: `${seasonProgress}%` }} /></div>
+        <p className="mt-2 text-[11px] text-gray-400">{completedGames} complete · {remainingGames} remaining{firstDistrict ? ` · District play starts ${firstDistrict.date} vs. ${firstDistrict.opponent}` : ' · District opener unavailable'}</p>
+        <div className="mt-3 grid gap-2 sm:grid-cols-3">
+          {roadAhead.map((item, index) => <div key={`${item.date}-${item.opponent}`} className={`rounded-lg border p-2 ${index === 0 && nextUnplayedIndex >= 0 ? 'border-orange-400/30 bg-orange-400/10' : 'border-white/5 bg-white/[0.035]'}`}><div className="flex items-center justify-between gap-2"><span className="text-[10px] font-black text-gray-300">{item.date} CT</span><span className="text-[9px] font-black uppercase text-gray-500">{item.homeAway === 'home' ? 'Home' : 'Away'}</span></div><p className="mt-1 truncate text-xs font-bold text-white">{item.opponent}</p><p className={`mt-1 text-[9px] font-bold uppercase ${item.isDistrict ? 'text-amber-300' : 'text-sky-300'}`}>{item.isDistrict ? 'District' : 'Non-district'}</p></div>)}
+        </div>
+      </div>
+      <footer className="border-t border-white/10 px-4 py-3 text-xs"><div className="flex flex-wrap gap-2 font-bold">{game.sourceUrl && <a href={game.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-blue-500/10 px-3 py-2 text-blue-200">Game details <ExternalLink className="h-3.5 w-3.5" /></a>}{team.sourceUrl && <a href={team.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-3 py-2 text-emerald-200">Full team schedule <ExternalLink className="h-3.5 w-3.5" /></a>}{game.watchUrl ? <a href={game.watchUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500/10 px-3 py-2 text-amber-200">Watch on NFHS <Tv className="h-3.5 w-3.5" /></a> : <span className="px-1 py-2 font-normal text-gray-500">Verified stream not listed yet</span>}</div><p className="mt-2 text-[10px] font-normal text-gray-500">Schedule verified {centralTimestamp(team.lastUpdated)}</p></footer>
     </> : <div className="p-6 text-center text-sm text-gray-400">No verified game is published for this team.</div>}
   </article>;
 }

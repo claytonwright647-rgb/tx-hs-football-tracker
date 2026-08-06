@@ -22,6 +22,15 @@ test('Martin and Stephenville use full live-style cards without fabricated score
   assert.match(center, /data\?\.hasLiveGames \? 30_000 : 300_000/);
 });
 
+test('followed cards explain the season road and keep schedule provenance visible', () => {
+  assert.match(center, /Season road/);
+  assert.match(center, /Game \$\{gameIndex \+ 1\} of \$\{games\.length\}/);
+  assert.match(center, /roadAhead = games\.slice\(roadStart, roadStart \+ 3\)/);
+  assert.match(center, /District play starts/);
+  assert.match(center, /Full team schedule/);
+  assert.match(center, /Schedule verified \{centralTimestamp\(team\.lastUpdated\)\}/);
+});
+
 test('followed teams appear ahead of the statewide scoreboard on both primary views', () => {
   assert.ok(home.indexOf('<FollowedTeamsCenter />') < home.indexOf('<Scoreboard />'));
   assert.ok(scoreboard.indexOf('<FollowedTeamsCenter />') < scoreboard.indexOf('<Scoreboard />'));
