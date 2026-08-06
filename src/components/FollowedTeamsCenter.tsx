@@ -71,6 +71,16 @@ function FollowedTeamCard({ team }: { team: FollowedTeam }) {
   const roadStart = nextUnplayedIndex >= 0 ? nextUnplayedIndex : Math.max(0, games.length - 3);
   const roadAhead = games.slice(roadStart, roadStart + 3);
   const firstDistrict = games.find((item) => item.isDistrict);
+  const districtGames = games.filter((item) => item.isDistrict).length;
+  const nonDistrictGames = Math.max(0, games.length - districtGames);
+  const homeGames = games.filter((item) => item.homeAway === 'home').length;
+  const awayGames = games.filter((item) => item.homeAway === 'away').length;
+  const seasonPhase = remainingGames === 0 ? 'Season complete' : game?.isDistrict ? 'District play' : 'Non-district';
+  const phaseMeaning = seasonPhase === 'Non-district'
+    ? 'These games build the record but do not count in the district standings.'
+    : seasonPhase === 'District play'
+      ? 'District results determine the team’s district finish.'
+      : 'Every scheduled regular-season game has a reported result.';
   const mine = game ? teamScore(game) : undefined;
   const theirs = game ? rivalScore(game) : undefined;
   const rows = game
@@ -98,7 +108,14 @@ function FollowedTeamCard({ team }: { team: FollowedTeam }) {
         <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-gray-800"><div className="h-full rounded-full bg-gradient-to-r from-orange-500 to-emerald-400" style={{ width: `${seasonProgress}%` }} /></div>
         <p className="mt-2 text-[11px] text-gray-400">{completedGames} complete · {remainingGames} remaining{firstDistrict ? ` · District play starts ${firstDistrict.date} vs. ${firstDistrict.opponent}` : ' · District opener unavailable'}</p>
         <div className="mt-3 grid gap-2 sm:grid-cols-3">
-          {roadAhead.map((item, index) => <div key={`${item.date}-${item.opponent}`} className={`rounded-lg border p-2 ${index === 0 && nextUnplayedIndex >= 0 ? 'border-orange-400/30 bg-orange-400/10' : 'border-white/5 bg-white/[0.035]'}`}><div className="flex items-center justify-between gap-2"><span className="text-[10px] font-black text-gray-300">{item.date} CT</span><span className="text-[9px] font-black uppercase text-gray-500">{item.homeAway === 'home' ? 'Home' : 'Away'}</span></div><p className="mt-1 truncate text-xs font-bold text-white">{item.opponent}</p><p className={`mt-1 text-[9px] font-bold uppercase ${item.isDistrict ? 'text-amber-300' : 'text-sky-300'}`}>{item.isDistrict ? 'District' : 'Non-district'}</p></div>)}
+          <div className="rounded-lg border border-sky-400/15 bg-sky-400/5 p-2"><p className="text-[9px] font-black uppercase text-sky-300">Schedule shape</p><p className="mt-1 text-xs font-bold text-white">{nonDistrictGames} non-district · {districtGames} district</p></div>
+          <div className="rounded-lg border border-violet-400/15 bg-violet-400/5 p-2"><p className="text-[9px] font-black uppercase text-violet-300">Home / away</p><p className="mt-1 text-xs font-bold text-white">{homeGames} home · {awayGames} away</p></div>
+          <div className="rounded-lg border border-amber-400/15 bg-amber-400/5 p-2"><p className="text-[9px] font-black uppercase text-amber-300">Current phase</p><p className="mt-1 text-xs font-bold text-white">{seasonPhase}</p></div>
+        </div>
+        <p className="mt-2 rounded-lg bg-white/[0.035] px-2.5 py-2 text-[11px] leading-5 text-gray-400"><strong className="text-gray-200">Why this phase matters:</strong> {phaseMeaning}</p>
+        <p className="mt-3 text-[10px] font-black uppercase tracking-wider text-gray-500">Next three scheduled games</p>
+        <div className="mt-3 grid gap-2 sm:grid-cols-3">
+          {roadAhead.map((item, index) => <div key={`${item.date}-${item.opponent}`} className={`rounded-lg border p-2 ${index === 0 && nextUnplayedIndex >= 0 ? 'border-orange-400/30 bg-orange-400/10' : 'border-white/5 bg-white/[0.035]'}`}><div className="flex items-center justify-between gap-2"><span className="text-[10px] font-black text-gray-300">{index + 1}. {item.date} CT</span><span className="text-[9px] font-black uppercase text-gray-500">{item.homeAway === 'home' ? 'Home' : 'Away'}</span></div><p className="mt-1 truncate text-xs font-bold text-white">{item.opponent}</p><p className={`mt-1 text-[9px] font-bold uppercase ${item.isDistrict ? 'text-amber-300' : 'text-sky-300'}`}>{item.isDistrict ? 'District' : 'Non-district'}</p></div>)}
         </div>
       </div>
       <footer className="border-t border-white/10 px-4 py-3 text-xs"><div className="flex flex-wrap gap-2 font-bold">{game.sourceUrl && <a href={game.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-blue-500/10 px-3 py-2 text-blue-200">Game details <ExternalLink className="h-3.5 w-3.5" /></a>}{team.sourceUrl && <a href={team.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-3 py-2 text-emerald-200">Full team schedule <ExternalLink className="h-3.5 w-3.5" /></a>}{game.watchUrl ? <a href={game.watchUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500/10 px-3 py-2 text-amber-200">Watch on NFHS <Tv className="h-3.5 w-3.5" /></a> : <span className="px-1 py-2 font-normal text-gray-500">Verified stream not listed yet</span>}</div><p className="mt-2 text-[10px] font-normal text-gray-500">Schedule verified {centralTimestamp(team.lastUpdated)}</p></footer>

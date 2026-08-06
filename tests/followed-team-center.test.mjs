@@ -31,6 +31,16 @@ test('followed cards explain the season road and keep schedule provenance visibl
   assert.match(center, /Schedule verified \{centralTimestamp\(team\.lastUpdated\)\}/);
 });
 
+test('followed cards explain schedule shape and the current season phase', () => {
+  assert.match(center, /Schedule shape/);
+  assert.match(center, /\{nonDistrictGames\} non-district · \{districtGames\} district/);
+  assert.match(center, /\{homeGames\} home · \{awayGames\} away/);
+  assert.match(center, /Current phase/);
+  assert.match(center, /Why this phase matters:/);
+  assert.match(center, /do not count in the district standings/);
+  assert.match(center, /Next three scheduled games/);
+});
+
 test('followed teams appear ahead of the statewide scoreboard on both primary views', () => {
   assert.ok(home.indexOf('<FollowedTeamsCenter />') < home.indexOf('<Scoreboard />'));
   assert.ok(scoreboard.indexOf('<FollowedTeamsCenter />') < scoreboard.indexOf('<Scoreboard />'));
