@@ -2,6 +2,7 @@ import Header from '@/components/Header';
 import SeasonIntelligence from '@/components/SeasonIntelligence';
 import HeroCountdown from '@/components/HeroCountdown';
 import Scoreboard from '@/components/Scoreboard';
+import FollowedTeamsCenter from '@/components/FollowedTeamsCenter';
 import { SEASON_INFO } from '@/lib/constants';
 import { getCurrentPhase, getPhaseConfig } from '@/lib/seasonIntelligence';
 
@@ -41,11 +42,13 @@ export default function Home() {
           </div>
         </div>
 
+        <FollowedTeamsCenter />
+
         <section className="mb-10" aria-labelledby="games-heading">
           <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.2em] text-orange-400">Official game center</p>
-              <h2 id="games-heading" className="text-3xl font-black text-white">Live scores and schedules</h2>
+              <h2 id="games-heading" className="text-3xl font-black text-white">Statewide live scores and schedules</h2>
             </div>
             <a href="/scoreboard" className="text-sm font-semibold text-orange-300 hover:text-orange-200">Open full scoreboard →</a>
           </div>

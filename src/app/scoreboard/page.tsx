@@ -1,6 +1,7 @@
 import Header from '@/components/Header';
 import Scoreboard from '@/components/Scoreboard';
 import SeasonIntelligence from '@/components/SeasonIntelligence';
+import FollowedTeamsCenter from '@/components/FollowedTeamsCenter';
 import { getCurrentSeasonYear } from '@/lib/seasonIntelligence';
 
 export default function ScoreboardPage() {
@@ -19,6 +20,8 @@ export default function ScoreboardPage() {
             Officially sourced live, scheduled, and final games. Missing feeds are labeled instead of filled with old results.
           </p>
         </div>
+
+        <FollowedTeamsCenter />
 
         <Scoreboard />
       </div>
